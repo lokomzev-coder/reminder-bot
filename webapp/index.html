@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminder Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Шапка -->
+        <header class="header">
+            <h1>📝 Мои задачи</h1>
+            <button class="btn-icon" id="btnAdd">+</button>
+        </header>
+
+        <!-- Вкладки (папки) -->
+        <div class="tabs" id="foldersList">
+            <button class="tab active">Все</button>
+        </div>
+
+        <!-- Список задач -->
+        <div class="tasks-list" id="tasksList">
+            <!-- Задачи будут здесь -->
+            <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <p>Нет активных задач</p>
+                <button class="btn-primary" id="btnCreateFirst">Создать первую</button>
+            </div>
+        </div>
+
+        <!-- Модальное окно создания -->
+        <div class="modal" id="modalCreate">
+            <div class="modal-content">
+                <h2>Новое напоминание</h2>
+                
+                <input type="text" id="inputTitle" placeholder="Название задачи" class="input">
+                
+                <textarea id="inputDescription" placeholder="Описание (необязательно)" class="input"></textarea>
+                
+                <label>Дедлайн:</label>
+                <input type="datetime-local" id="inputDeadline" class="input">
+                
+                <label>Напомнить за:</label>
+                <select id="selectRemindBefore" class="input">
+                    <option value="0">В момент дедлайна</option>
+                    <option value="5">За 5 минут</option>
+                    <option value="15">За 15 минут</option>
+                    <option value="30">За 30 минут</option>
+                    <option value="60">За 1 час</option>
+                    <option value="1440">За 1 день</option>
+                </select>
+                
+                <label>Повтор:</label>
+                <select id="selectRepeat" class="input">
+                    <option value="none">Без повтора</option>
+                    <option value="daily">Каждый день</option>
+                    <option value="weekly">Каждую неделю</option>
+                    <option value="monthly">Каждый месяц</option>
+                </select>
+                
+                <label>Папка:</label>
+                <select id="selectFolder" class="input">
+                    <option value="">Загрузка...</option>
+                </select>
+                
+                <div class="modal-buttons">
+                    <button class="btn-secondary" id="btnCancel">Отмена</button>
+                    <button class="btn-primary" id="btnSave">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
