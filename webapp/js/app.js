@@ -1,67 +1,70 @@
 const app = {
     tg: null,
-    currentFolder: null,
     folders: [],
+    tasks: [],
+    currentView: 'dashboard',
 
     async init() {
-        // Инициализация Telegram WebApp
         this.tg = Telegram.WebApp;
         this.tg.ready();
         this.tg.expand();
-        
-        // Устанавливаем цвета темы
-        document.documentElement.style.setProperty('--bg', this.tg.themeParams.bg_color || '#0f0f0f');
-        document.documentElement.style.setProperty('--text', this.tg.themeParams.text_color || '#ffffff');
-        
-        // Обработчики кнопок
-        document.getElementById('btnAdd').addEventListener('click', () => this.openCreateModal());
-        document.getElementById('btnCreateFirst').addEventListener('click', () => this.openCreateModal());
-        document.getElementById('btnCancel').addEventListener('click', () => UI.toggleModal(false));
-        document.getElementById('btnSave').addEventListener('click', () => this.saveReminder());
-        
-        // Закрытие модалки по клику вне
-        document.getElementById('modalCreate').addEventListener('click', (e) => {
+
+        // Навигация
+        document.querySelectorAll('.nav-icon[data-view]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.currentView = btn.dataset.view;
+                UI.switchView(btn.dataset.view);
+            });
+        });
+
+        // Кнопки создания
+        document.getElementById('btnAddTask')?.addEventListener('click', () => this.openCreateModal());
+        document.getElementById('btnAddFolder')?.addEventListener('click', () => this.tg.showAlert('Создание папок — в разработке'));
+
+        // Модальное окно
+        document.getElementById('btnCancelTask')?.addEventListener('click', () => UI.toggleModal(false));
+        document.getElementById('btnSaveTask')?.addEventListener('click', () => this.saveTask());
+        document.getElementById('modalTask')?.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) UI.toggleModal(false);
         });
 
-        // Загружаем данные
+        // Клик по тегам папок (делегирование)
+        document.getElementById('foldersRow')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('folder-tag')) {
+                document.querySelectorAll('.folder-tag').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                this.loadTasks(e.target.dataset.folder || null);
+            }
+        });
+
         await this.loadFolders();
         await this.loadTasks();
     },
 
     async loadFolders() {
-        // TODO: Загрузить из БД через бота
+        // TODO: Загрузить из БД
         this.folders = [
-            { id: '1', name: 'Работа', color: '#e74c3c', icon: '💼' },
-            { id: '2', name: 'Личное', color: '#2ecc71', icon: '🏠' },
-            { id: '3', name: 'Учёба', color: '#f39c12', icon: '📚' }
+            { id: '1', name: 'Работа', task_count: 8 },
+            { id: '2', name: 'Личное', task_count: 5 },
+            { id: '3', name: 'Учеба', task_count: 3 }
         ];
-        UI.renderFolders(this.folders);
-        this.populateFolderSelect();
+        UI.renderFolderTags(this.folders);
+        UI.renderFoldersGrid(this.folders);
+        UI.populateFolderSelect(this.folders);
     },
 
     async loadTasks(folderId = null) {
         // TODO: Загрузить из БД
-        const tasks = [
-            {
-                id: '1',
-                title: 'Сходить в магазин',
-                deadline: new Date(Date.now() + 3600000).toISOString(),
-                folder_name: 'Личное',
-                folder_color: '#2ecc71',
-                folder_icon: '🏠',
-                is_completed: false
-            }
+        this.tasks = [
+            { id: '1', title: 'Дизайн-ревью макета', deadline: new Date(Date.now() + 7200000).toISOString(), folder_name: 'Работа', is_completed: false },
+            { id: '2', title: 'Отправить отчет', deadline: new Date(Date.now() - 3600000).toISOString(), folder_name: 'Работа', is_completed: false },
+            { id: '3', title: 'Созвон с командой', deadline: new Date(Date.now() + 14400000).toISOString(), folder_name: 'Работа', is_completed: false },
+            { id: '4', title: 'Обновить документацию', deadline: new Date(Date.now() + 86400000).toISOString(), folder_name: 'Личное', is_completed: false }
         ];
-        UI.renderTasks(tasks);
-    },
 
-    populateFolderSelect() {
-        const select = document.getElementById('selectFolder');
-        select.innerHTML = '<option value="">Без папки</option>';
-        this.folders.forEach(f => {
-            select.innerHTML += `<option value="${f.id}">${f.icon} ${f.name}</option>`;
-        });
+        const filtered = folderId ? this.tasks.filter(t => t.folder_id === folderId) : this.tasks;
+        UI.renderTasks(filtered);
+        UI.renderCompactTasks(this.tasks);
     },
 
     openCreateModal() {
@@ -69,35 +72,25 @@ const app = {
         UI.toggleModal(true);
     },
 
-    async saveReminder() {
+    async saveTask() {
         const title = document.getElementById('inputTitle').value.trim();
         if (!title) {
             this.tg.showAlert('Введите название задачи');
             return;
         }
-
         const data = {
-            title: title,
+            title,
             description: document.getElementById('inputDescription').value.trim(),
             deadline: document.getElementById('inputDeadline').value || null,
             remind_before: parseInt(document.getElementById('selectRemindBefore').value),
             repeat_type: document.getElementById('selectRepeat').value,
             folder_id: document.getElementById('selectFolder').value || null
         };
-
         await API.createReminder(data);
         UI.toggleModal(false);
-        this.tg.showAlert('✅ Напоминание создано!');
-        
-        // Обновляем список
-        setTimeout(() => this.loadTasks(), 500);
-    },
-
-    async toggleTask(id, completed) {
-        await API.toggleComplete(id, completed);
-        this.loadTasks();
+        this.tg.showAlert('Задача создана');
+        setTimeout(() => this.loadTasks(), 400);
     }
 };
 
-// Запуск при загрузке
 document.addEventListener('DOMContentLoaded', () => app.init());

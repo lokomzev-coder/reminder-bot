@@ -1,83 +1,116 @@
 const UI = {
-    // Отрисовка вкладок папок
-    renderFolders(folders, activeFolderId = null) {
-        const container = document.getElementById('foldersList');
-        container.innerHTML = '<button class="tab active" data-folder="">📋 Все</button>';
-        
-        folders.forEach(folder => {
+    // Переключение вкладок навигации
+    switchView(viewName) {
+        document.querySelectorAll('.nav-icon').forEach(icon => icon.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+
+        const icon = document.querySelector(`[data-view="${viewName}"]`);
+        if (icon) icon.classList.add('active');
+
+        const view = document.getElementById(`view-${viewName}`);
+        if (view) view.classList.add('active');
+    },
+
+    // Отрисовка тегов папок
+    renderFolderTags(folders, activeId = null) {
+        const row = document.getElementById('foldersRow');
+        row.innerHTML = '<button class="folder-tag active" data-folder="">Все</button>';
+        folders.forEach(f => {
             const btn = document.createElement('button');
-            btn.className = 'tab';
-            btn.dataset.folder = folder.id;
-            btn.textContent = `${folder.icon || '📁'} ${folder.name}`;
-            if (folder.id === activeFolderId) btn.classList.add('active');
-            container.appendChild(btn);
+            btn.className = 'folder-tag';
+            btn.dataset.folder = f.id;
+            btn.textContent = f.name;
+            if (f.id === activeId) btn.classList.add('active');
+            row.appendChild(btn);
         });
     },
 
     // Отрисовка списка задач
-    renderTasks(tasks) {
-        const container = document.getElementById('tasksList');
-        
-        if (tasks.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">🎉</div>
-                    <p>Нет активных задач</p>
-                    <button class="btn-primary" onclick="app.openCreateModal()">Создать первую</button>
-                </div>
-            `;
+    renderTasks(tasks, containerId = 'tasksFullList') {
+        const container = document.getElementById(containerId);
+        if (!tasks || tasks.length === 0) {
+            container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">Нет задач</div>`;
             return;
         }
-
-        container.innerHTML = tasks.map(task => `
-            <div class="task-card ${task.is_completed ? 'completed' : ''}" 
-                 onclick="app.toggleTask('${task.id}', ${!task.is_completed})">
-                <div class="task-header">
-                    <span class="task-title">${task.title}</span>
-                    <span class="task-folder" style="background: ${task.folder_color || '#333'}20; color: ${task.folder_color || '#aaa'}">
-                        ${task.folder_icon || '📁'} ${task.folder_name || 'Без папки'}
-                    </span>
+        container.innerHTML = tasks.map(t => `
+            <div class="task-row ${t.is_completed ? 'completed' : ''}" data-id="${t.id}">
+                <div class="task-check"></div>
+                <div class="task-info-row">
+                    <div class="task-title-row">${t.title}</div>
+                    <div class="task-meta-row">
+                        ${t.deadline ? `<span>${UI.formatDate(t.deadline)}</span>` : ''}
+                        ${t.folder_name ? `<span class="task-folder-tag">${t.folder_name}</span>` : ''}
+                    </div>
                 </div>
-                ${task.deadline ? `
-                <div class="task-deadline ${UI.isUrgent(task.deadline) ? 'urgent' : ''}">
-                    ⏰ ${UI.formatDate(task.deadline)}
-                </div>` : ''}
             </div>
         `).join('');
     },
 
+    // Отрисовка сетки папок
+    renderFoldersGrid(folders) {
+        const grid = document.getElementById('foldersGrid');
+        if (!folders.length) {
+            grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">Нет папок</div>`;
+            return;
+        }
+        grid.innerHTML = folders.map(f => `
+            <div class="folder-card" data-id="${f.id}">
+                <div class="folder-card-name">${f.name}</div>
+                <div class="folder-card-count">${f.task_count || 0} задач</div>
+            </div>
+        `).join('');
+    },
+
+    // Отрисовка компактного списка на дашборде
+    renderCompactTasks(tasks) {
+        const container = document.getElementById('compactTaskList');
+        const slice = tasks.slice(0, 4);
+        container.innerHTML = slice.map(t => {
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            return `
+                <div class="compact-task ${isOverdue ? 'overdue' : ''}">
+                    <div class="compact-status"></div>
+                    <div class="compact-info">
+                        <div class="compact-title">${t.title}</div>
+                        <div class="compact-time">${isOverdue ? 'Просрочено' : UI.formatDate(t.deadline)}</div>
+                    </div>
+                </div>`;
+        }).join('');
+    },
+
     formatDate(dateString) {
         if (!dateString) return '';
-        const date = new Date(dateString);
+        const d = new Date(dateString);
         const now = new Date();
-        const diff = date - now;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
+        const diff = d - now;
+        const mins = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
         if (diff < 0) return 'Просрочено';
-        if (days > 0) return `Через ${days} дн.`;
-        if (hours > 0) return `Через ${hours} ч.`;
-        return `Через ${minutes} мин.`;
+        if (days > 0) return `${days} дн`;
+        if (hours > 0) return `${hours} ч`;
+        if (mins > 0) return `${mins} мин`;
+        return 'Сейчас';
     },
 
-    isUrgent(dateString) {
-        const diff = new Date(dateString) - new Date();
-        return diff < 3600000; // Меньше часа
-    },
-
-    // Показать/скрыть модальное окно
     toggleModal(show) {
-        const modal = document.getElementById('modalCreate');
+        const modal = document.getElementById('modalTask');
         modal.classList.toggle('active', show);
     },
 
-    // Очистить форму
     clearForm() {
         document.getElementById('inputTitle').value = '';
         document.getElementById('inputDescription').value = '';
         document.getElementById('inputDeadline').value = '';
         document.getElementById('selectRemindBefore').value = '0';
         document.getElementById('selectRepeat').value = 'none';
+    },
+
+    populateFolderSelect(folders) {
+        const select = document.getElementById('selectFolder');
+        select.innerHTML = '<option value="">Без папки</option>';
+        folders.forEach(f => {
+            select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+        });
     }
 };
