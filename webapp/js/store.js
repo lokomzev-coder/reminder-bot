@@ -37,7 +37,6 @@ class Store {
     }
 
     getAll() { return [...this.tasks]; }
-
     getActive() { return this.tasks.filter(t => !t.completed); }
 
     getToday() {
