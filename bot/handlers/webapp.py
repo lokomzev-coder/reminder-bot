@@ -2,67 +2,125 @@ from aiogram import Router, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 import json
 from config import WEBAPP_URL
-from database import supabase_admin
+from database import Database
 
 router = Router()
 
 @router.message(lambda message: message.web_app_data is not None)
 async def handle_webapp_data(message: types.Message):
-    """Обрабатывает данные, присланные из WebApp"""
     try:
         data = json.loads(message.web_app_data.data)
         action = data.get("action")
         
         if action == "create_reminder":
-            await create_reminder(message.from_user.id, data)
+            await handle_create_reminder(message, data)
         elif action == "get_reminders":
-            await send_reminders_list(message.from_user.id, message)
+            await handle_get_reminders(message, data)
+        elif action == "get_folders":
+            await handle_get_folders(message)
+        elif action == "create_folder":
+            await handle_create_folder(message, data)
+        elif action == "toggle_complete":
+            await handle_toggle_complete(message, data)
+        elif action == "get_stats":
+            await handle_get_stats(message)
+        elif action == "delete_reminder":
+            await handle_delete_reminder(message, data)
+        else:
+            await message.answer("Неизвестное действие")
             
     except Exception as e:
-        await message.answer(f"❌ Ошибка: {str(e)}")
+        await message.answer(f"Ошибка обработки данных: {str(e)}")
 
-async def create_reminder(user_id: int, data: dict):
-    """Создаёт напоминание в БД"""
-    reminder = supabase_admin.table("reminders").insert({
-        "user_id": user_id,
-        "folder_id": data.get("folder_id"),
-        "title": data["title"],
-        "description": data.get("description", ""),
-        "deadline": data.get("deadline"),
-        "remind_before": data.get("remind_before", 0),
-        "repeat_type": data.get("repeat_type", "none"),
-        "repeat_interval": data.get("repeat_interval", 1),
-        "repeat_days": data.get("repeat_days", []),
-        "next_remind_at": data.get("deadline")  # Первое напоминание = дедлайн
-    }).execute()
-    
-    return reminder.data[0] if reminder.data else None
-
-async def send_reminders_list(user_id: int, message: types.Message):
-    """Отправляет список напоминаний"""
-    reminders = supabase_admin.table("reminders")\
-        .select("*, folders(name, color, icon)")\
-        .eq("user_id", user_id)\
-        .eq("is_completed", False)\
-        .order("deadline")\
-        .execute()
-    
-    if not reminders.data:
-        await message.answer("У вас пока нет активных напоминаний ✨")
+async def handle_create_reminder(message: types.Message, data: dict):
+    title = data.get("title", "").strip()
+    if not title:
+        await message.answer("Название задачи не может быть пустым")
         return
     
-    text = "📋 *Ваши напоминания:*\n\n"
-    for r in reminders.data:
+    reminder = await Database.create_reminder(message.from_user.id, data)
+    
+    if reminder:
+        await message.answer(
+            f"Задача создана: <b>{title}</b>",
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer("Не удалось создать задачу")
+
+async def handle_get_reminders(message: types.Message, data: dict):
+    folder_id = data.get("folder_id")
+    reminders = await Database.get_reminders(message.from_user.id, folder_id)
+    
+    if not reminders:
+        await message.answer("У вас пока нет задач")
+        return
+    
+    text = "<b>Ваши задачи:</b>\n\n"
+    for i, r in enumerate(reminders[:10], 1):
         deadline = r.get("deadline", "Без срока")
-        folder_name = r.get("folders", {}).get("name", "Без папки") if r.get("folders") else "Без папки"
-        text += f"• *{r['title']}*\n"
-        text += f"  📁 {folder_name} | ⏰ {deadline}\n\n"
+        if deadline and isinstance(deadline, str):
+            try:
+                from datetime import datetime
+                dt = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+                deadline = dt.strftime("%d.%m.%Y %H:%M")
+            except:
+                pass
+        
+        folder_name = "Без папки"
+        if r.get("folders"):
+            folder_name = r["folders"]["name"]
+        
+        text += f"{i}. <b>{r['title']}</b>\n"
+        text += f"   Папка: {folder_name} | Срок: {deadline}\n\n"
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text="📝 Открыть приложение",
-            web_app=WebAppInfo(url=WEBAPP_URL)
+            text="Открыть все задачи",
+            web_app=WebAppInfo(url=WEBAPP_URL + "#tasks")
         )]
     ])
     
-    await message.answer(text, parse_mode="Markdown", reply_markup=keyboard)
+    await message.answer(text, reply_markup=keyboard, parse_mode="HTML")
+
+async def handle_get_folders(message: types.Message):
+    folders = await Database.get_folders(message.from_user.id)
+    await message.answer(json.dumps({"folders": folders}))
+
+async def handle_create_folder(message: types.Message, data: dict):
+    name = data.get("name", "").strip()
+    if not name:
+        await message.answer("Название папки не может быть пустым")
+        return
+    
+    folder = await Database.create_folder(
+        user_id=message.from_user.id,
+        name=name,
+        color=data.get("color", "#4A90D9"),
+        icon=data.get("icon", "folder")
+    )
+    
+    if folder:
+        await message.answer(f"Папка создана: <b>{name}</b>", parse_mode="HTML")
+    else:
+        await message.answer("Не удалось создать папку")
+
+async def handle_toggle_complete(message: types.Message, data: dict):
+    reminder_id = data.get("reminder_id")
+    is_completed = data.get("is_completed", False)
+    
+    success = await Database.toggle_reminder(reminder_id, is_completed)
+    if success:
+        status = "выполнена" if is_completed else "возвращена в активные"
+        await message.answer(f"Задача отмечена как {status}")
+    else:
+        await message.answer("Не удалось обновить задачу")
+
+async def handle_get_stats(message: types.Message):
+    stats = await Database.get_stats(message.from_user.id)
+    await message.answer(json.dumps(stats))
+
+async def handle_delete_reminder(message: types.Message, data: dict):
+    reminder_id = data.get("reminder_id")
+    await Database.toggle_reminder(reminder_id, True)
+    await message.answer("Задача удалена")

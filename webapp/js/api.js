@@ -1,16 +1,4 @@
 const API = {
-    // Получить список папок
-    async getFolders() {
-        // Через Telegram WebApp отправляем данные
-        return new Promise((resolve) => {
-            Telegram.WebApp.sendData(JSON.stringify({
-                action: 'get_folders'
-            }));
-            resolve([]);
-        });
-    },
-
-    // Создать напоминание
     async createReminder(data) {
         Telegram.WebApp.sendData(JSON.stringify({
             action: 'create_reminder',
@@ -18,7 +6,6 @@ const API = {
         }));
     },
 
-    // Получить список напоминаний
     async getReminders(folderId = null) {
         Telegram.WebApp.sendData(JSON.stringify({
             action: 'get_reminders',
@@ -26,12 +13,39 @@ const API = {
         }));
     },
 
-    // Выполнить/снять выполнение задачи
-    async toggleComplete(reminderId, completed) {
+    async getFolders() {
+        Telegram.WebApp.sendData(JSON.stringify({
+            action: 'get_folders'
+        }));
+    },
+
+    async createFolder(name, color, icon) {
+        Telegram.WebApp.sendData(JSON.stringify({
+            action: 'create_folder',
+            name: name,
+            color: color,
+            icon: icon
+        }));
+    },
+
+    async toggleComplete(reminderId, isCompleted) {
         Telegram.WebApp.sendData(JSON.stringify({
             action: 'toggle_complete',
             reminder_id: reminderId,
-            is_completed: completed
+            is_completed: isCompleted
+        }));
+    },
+
+    async getStats() {
+        Telegram.WebApp.sendData(JSON.stringify({
+            action: 'get_stats'
+        }));
+    },
+
+    async deleteReminder(reminderId) {
+        Telegram.WebApp.sendData(JSON.stringify({
+            action: 'delete_reminder',
+            reminder_id: reminderId
         }));
     }
 };

@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from config import BOT_TOKEN
@@ -6,18 +7,19 @@ from handlers import start, webapp
 from services.scheduler import check_reminders
 
 async def main():
-    # Инициализация бота
+    if not BOT_TOKEN:
+        print("Error: BOT_TOKEN not set")
+        sys.exit(1)
+    
     bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher()
     
-    # Подключаем роутеры
     dp.include_router(start.router)
     dp.include_router(webapp.router)
     
-    # Запускаем планировщик в фоне
     asyncio.create_task(check_reminders())
     
-    # Запускаем бота
+    print("Bot started!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

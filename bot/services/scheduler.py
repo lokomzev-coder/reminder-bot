@@ -1,90 +1,99 @@
 import asyncio
 from datetime import datetime, timezone
-from database import supabase_admin
-from config import BOT_TOKEN
 from aiogram import Bot
+from config import BOT_TOKEN
+from database import Database
+from services.reminders import ReminderScheduler
 
 bot = Bot(token=BOT_TOKEN)
 
 async def check_reminders():
-    """Проверяет и отправляет напоминания каждую минуту"""
     while True:
         try:
-            now = datetime.now(timezone.utc).isoformat()
+            pending = await Database.get_pending_reminders()
             
-            # Находим напоминания, которые пора отправить
-            reminders = supabase_admin.table("reminders")\
-                .select("*")\
-                .eq("is_completed", False)\
-                .lte("next_remind_at", now)\
-                .execute()
-            
-            for reminder in reminders.data:
-                await send_reminder(reminder)
-                await update_next_reminder(reminder)
-                
+            for reminder in pending:
+                try:
+                    await send_notification(reminder)
+                    
+                    next_time = ReminderScheduler.calculate_next_remind(reminder)
+                    
+                    if next_time is None:
+                        await Database.update_next_reminder(
+                            reminder["id"], 
+                            next_remind_at=None, 
+                            is_completed=True
+                        )
+                    else:
+                        await Database.update_next_reminder(
+                            reminder["id"], 
+                            next_remind_at=next_time, 
+                            is_completed=False
+                        )
+                    
+                    await Database.log_reminder_sent(reminder["id"], "sent")
+                    
+                except Exception as e:
+                    print(f"Error processing reminder {reminder.get('id')}: {e}")
+                    await Database.log_reminder_sent(reminder["id"], "failed")
+        
         except Exception as e:
             print(f"Scheduler error: {e}")
         
-        await asyncio.sleep(60)  # Проверка раз в минуту
+        await asyncio.sleep(60)
 
-async def send_reminder(reminder: dict):
-    """Отправляет напоминание в чат"""
+async def send_notification(reminder: dict):
     try:
-        deadline_str = reminder.get("deadline", "Не указан")
-        text = f"⏰ *Напоминание!*\n\n"
-        text += f"📌 *{reminder['title']}*\n"
+        deadline = reminder.get("deadline")
+        deadline_str = "Не указан"
+        
+        if deadline:
+            try:
+                deadline_dt = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+                now = datetime.now(timezone.utc)
+                diff = deadline_dt - now
+                
+                if diff.total_seconds() <= 0:
+                    deadline_str = "Прямо сейчас"
+                else:
+                    minutes = int(diff.total_seconds() / 60)
+                    hours = minutes // 60
+                    days = hours // 24
+                    
+                    if days > 0:
+                        deadline_str = f"Через {days} дн"
+                    elif hours > 0:
+                        deadline_str = f"Через {hours} ч"
+                    elif minutes > 0:
+                        deadline_str = f"Через {minutes} мин"
+                    else:
+                        deadline_str = "Прямо сейчас"
+            except:
+                deadline_str = str(deadline)
+        
+        text = f"<b>Напоминание</b>\n\n"
+        text += f"<b>{reminder['title']}</b>\n"
         
         if reminder.get("description"):
-            text += f"📝 {reminder['description']}\n"
+            text += f"{reminder['description']}\n"
         
-        text += f"📅 Дедлайн: {deadline_str}\n"
+        text += f"\nДедлайн: {deadline_str}"
         
         if reminder["repeat_type"] != "none":
-            text += f"🔄 Повтор: {reminder['repeat_type']}\n"
+            repeat_names = {
+                "daily": "Ежедневно",
+                "weekly": "Еженедельно",
+                "monthly": "Ежемесячно",
+                "custom": "По расписанию"
+            }
+            text += f"\nПовтор: {repeat_names.get(reminder['repeat_type'], reminder['repeat_type'])}"
         
         await bot.send_message(
             chat_id=reminder["user_id"],
             text=text,
-            parse_mode="Markdown"
+            parse_mode="HTML"
         )
         
-        # Логируем отправку
-        supabase_admin.table("reminder_logs").insert({
-            "reminder_id": reminder["id"],
-            "status": "sent"
-        }).execute()
-        
     except Exception as e:
-        print(f"Error sending reminder {reminder['id']}: {e}")
-        
-        supabase_admin.table("reminder_logs").insert({
-            "reminder_id": reminder["id"],
-            "status": "failed"
-        }).execute()
-
-async def update_next_reminder(reminder: dict):
-    """Обновляет время следующего напоминания с учётом повторов"""
-    if reminder["repeat_type"] == "none":
-        # Помечаем как выполненное
-        supabase_admin.table("reminders")\
-            .update({"is_completed": True})\
-            .eq("id", reminder["id"])\
-            .execute()
-    else:
-        # Логика расчёта следующей даты (упрощённая)
-        from datetime import timedelta
-        
-        next_time = datetime.fromisoformat(reminder["next_remind_at"])
-        
-        if reminder["repeat_type"] == "daily":
-            next_time += timedelta(days=reminder["repeat_interval"])
-        elif reminder["repeat_type"] == "weekly":
-            next_time += timedelta(weeks=reminder["repeat_interval"])
-        elif reminder["repeat_type"] == "monthly":
-            next_time += timedelta(days=30 * reminder["repeat_interval"])
-        
-        supabase_admin.table("reminders")\
-            .update({"next_remind_at": next_time.isoformat()})\
-            .eq("id", reminder["id"])\
-            .execute()
+        print(f"Error sending notification for reminder {reminder.get('id')}: {e}")
+        raise
