@@ -2,249 +2,144 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Reminder</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Левая навигационная панель -->
-        <nav class="sidebar">
-            <div class="sidebar-icons">
-                <button class="nav-icon active" data-view="dashboard" title="Главная">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                </button>
-                <button class="nav-icon" data-view="grid" title="Все задачи">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                </button>
-                <button class="nav-icon" data-view="stats" title="Статистика">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                </button>
-                <button class="nav-icon" data-view="calendar" title="Календарь">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                </button>
-                <button class="nav-icon" data-view="folders" title="Папки">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                </button>
-                <button class="nav-icon" data-view="settings" title="Настройки">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                </button>
-                <div class="sidebar-divider"></div>
-                <button class="nav-icon theme-toggle" title="Тема">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                </button>
-                <button class="nav-icon profile-btn" title="Профиль">
-                    <span class="profile-avatar">A</span>
-                </button>
+    <!-- Фоновый звёздный узор -->
+    <div class="stars-bg"></div>
+
+    <div class="app-container">
+        <!-- Верхняя системная панель -->
+        <header class="status-bar">
+            <span class="time">9:41</span>
+            <div class="status-icons">
+                <svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="6" width="2" height="5" rx="0.5" fill="white" opacity="0.9"/><rect x="3" y="4" width="2" height="7" rx="0.5" fill="white" opacity="0.9"/><rect x="6" y="2" width="2" height="9" rx="0.5" fill="white" opacity="0.9"/><rect x="9" y="0" width="2" height="11" rx="0.5" fill="white" opacity="0.9"/></svg>
+                <svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="5" width="12" height="6" rx="1" fill="none" stroke="white" stroke-width="1" opacity="0.9"/><rect x="13" y="6.5" width="2" height="3" rx="0.5" fill="white" opacity="0.9"/></svg>
+                <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0" y="0" width="21" height="12" rx="3" fill="none" stroke="white" stroke-width="1" opacity="0.9"/><rect x="23" y="3.5" width="1.5" height="5" rx="0.5" fill="white" opacity="0.9"/><rect x="2" y="2" width="14" height="8" rx="1.5" fill="white" opacity="0.5"/></svg>
             </div>
-        </nav>
+        </header>
 
         <!-- Основной контент -->
-        <main class="main-content" id="mainContent">
-            <!-- Дашборд -->
-            <section class="view active" id="view-dashboard">
-                <div class="dashboard-grid">
-                    <!-- Статистика -->
-                    <div class="card stat-card">
-                        <div class="card-label">Активные задачи</div>
-                        <div class="card-value">24</div>
-                        <div class="card-sub">+3 за сегодня</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-label">Выполнено</div>
-                        <div class="card-value">156</div>
-                        <div class="card-sub">92% за неделю</div>
-                    </div>
-                    <div class="card stat-card accent">
-                        <div class="card-label">Продуктивность</div>
-                        <div class="card-value">87%</div>
-                        <div class="ring-chart">
-                            <svg viewBox="0 0 80 80">
-                                <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
-                                <circle cx="40" cy="40" r="32" fill="none" stroke="url(#gradOrange)" stroke-width="6" stroke-dasharray="175 25" stroke-linecap="round" transform="rotate(-90 40 40)"/>
-                                <defs><linearGradient id="gradOrange" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient></defs>
+        <main class="content">
+            <!-- Центральный круг-якорь -->
+            <div class="hero-circle-wrapper">
+                <div class="hero-circle">
+                    <div class="hero-circle-inner">
+                        <div class="hero-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                             </svg>
-                            <span class="ring-value">87%</span>
                         </div>
+                        <div class="hero-label">Reminders</div>
+                        <div class="hero-count">4 active</div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- График активности -->
-                    <div class="card chart-card wide">
-                        <div class="card-header">
-                            <span class="card-label">Активность за неделю</span>
-                        </div>
-                        <div class="bar-chart">
-                            <div class="bar-item"><div class="bar" style="height: 60%"></div><span>ПН</span></div>
-                            <div class="bar-item"><div class="bar active" style="height: 85%"></div><span>ВТ</span></div>
-                            <div class="bar-item"><div class="bar active" style="height: 45%"></div><span>СР</span></div>
-                            <div class="bar-item"><div class="bar" style="height: 90%"></div><span>ЧТ</span></div>
-                            <div class="bar-item"><div class="bar active" style="height: 70%"></div><span>ПТ</span></div>
-                            <div class="bar-item"><div class="bar" style="height: 30%"></div><span>СБ</span></div>
-                            <div class="bar-item"><div class="bar active" style="height: 15%"></div><span>ВС</span></div>
-                        </div>
+            <!-- Индикаторы статусов -->
+            <div class="status-indicators">
+                <div class="indicator" style="--fill: 75%; --color: #7c5ce7;">
+                    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--color)" stroke-width="4" stroke-dasharray="75 25" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>
+                </div>
+                <div class="indicator" style="--fill: 40%; --color: #f97316;">
+                    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--color)" stroke-width="4" stroke-dasharray="40 60" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>
+                </div>
+                <div class="indicator" style="--fill: 90%; --color: #2ecc71;">
+                    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--color)" stroke-width="4" stroke-dasharray="90 10" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>
+                </div>
+                <div class="indicator" style="--fill: 55%; --color: #4A90D9;">
+                    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--color)" stroke-width="4" stroke-dasharray="55 45" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>
+                </div>
+                <div class="indicator" style="--fill: 20%; --color: #e74c3c;">
+                    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--color)" stroke-width="4" stroke-dasharray="20 80" stroke-linecap="round" transform="rotate(-90 20 20)"/></svg>
+                </div>
+            </div>
+
+            <!-- Карточка-приглашение -->
+            <div class="cta-card" id="ctaCard">
+                <div class="cta-shine"></div>
+                <div class="cta-content">
+                    <div class="cta-text">
+                        <div class="cta-title">Create new reminder</div>
+                        <div class="cta-sub">Set time, repeat & folder</div>
                     </div>
+                    <div class="cta-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Таймер -->
-                    <div class="card timer-card">
-                        <div class="card-label">Фокус-таймер</div>
-                        <div class="timer-ring">
-                            <svg viewBox="0 0 120 120">
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="url(#gradTimer)" stroke-width="8" stroke-dasharray="235 79" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                                <defs><linearGradient id="gradTimer" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient></defs>
-                            </svg>
-                            <span class="timer-value">45:00</span>
+            <!-- Секция Daily Tasks -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-title">Daily Tasks</span>
+                    <span class="section-count">3</span>
+                </div>
+                <div class="task-cards" id="taskCards">
+                    <div class="task-card">
+                        <div class="task-icon" style="--icon-bg: rgba(124,92,231,0.2); --icon-color: #7c5ce7;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
                         </div>
-                        <button class="btn-start">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-                            Start
+                        <div class="task-info">
+                            <div class="task-name">Design review</div>
+                            <div class="task-time">14:30 · Work</div>
+                        </div>
+                        <button class="task-check-btn">
+                            <div class="check-circle"></div>
                         </button>
                     </div>
-
-                    <!-- Ближайшие задачи -->
-                    <div class="card tasks-card wide">
-                        <div class="card-header">
-                            <span class="card-label">Ближайшие</span>
+                    <div class="task-card overdue">
+                        <div class="task-icon" style="--icon-bg: rgba(249,115,22,0.2); --icon-color: #f97316;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         </div>
-                        <div class="task-list-compact" id="compactTaskList">
-                            <div class="compact-task">
-                                <div class="compact-status"></div>
-                                <div class="compact-info">
-                                    <div class="compact-title">Дизайн-ревью макета</div>
-                                    <div class="compact-time">14:30</div>
-                                </div>
-                            </div>
-                            <div class="compact-task overdue">
-                                <div class="compact-status"></div>
-                                <div class="compact-info">
-                                    <div class="compact-title">Отправить отчёт</div>
-                                    <div class="compact-time">Просрочено</div>
-                                </div>
-                            </div>
-                            <div class="compact-task">
-                                <div class="compact-status"></div>
-                                <div class="compact-info">
-                                    <div class="compact-title">Созвон с командой</div>
-                                    <div class="compact-time">16:00</div>
-                                </div>
-                            </div>
+                        <div class="task-info">
+                            <div class="task-name">Send weekly report</div>
+                            <div class="task-time overdue-text">Overdue · Work</div>
                         </div>
+                        <button class="task-check-btn">
+                            <div class="check-circle"></div>
+                        </button>
                     </div>
-
-                    <!-- Быстрые ссылки -->
-                    <div class="card links-card">
-                        <div class="card-label">Быстрые ссылки</div>
-                        <div class="links-grid">
-                            <div class="link-item">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                                <span>Доска</span>
-                            </div>
-                            <div class="link-item">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                <span>Заметки</span>
-                            </div>
-                            <div class="link-item">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span>История</span>
-                            </div>
-                            <div class="link-item">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                <span>Команда</span>
-                            </div>
+                    <div class="task-card">
+                        <div class="task-icon" style="--icon-bg: rgba(46,204,113,0.2); --icon-color: #2ecc71;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         </div>
+                        <div class="task-info">
+                            <div class="task-name">Team standup</div>
+                            <div class="task-time">16:00 · Work</div>
+                        </div>
+                        <button class="task-check-btn">
+                            <div class="check-circle"></div>
+                        </button>
                     </div>
                 </div>
-            </section>
-
-            <!-- Список задач -->
-            <section class="view" id="view-grid">
-                <div class="view-header">
-                    <h2>Все задачи</h2>
-                    <button class="btn-add" id="btnAddTask">+</button>
-                </div>
-                <div class="folders-row" id="foldersRow">
-                    <button class="folder-tag active">Все</button>
-                </div>
-                <div class="tasks-full-list" id="tasksFullList"></div>
-            </section>
-
-            <!-- Папки -->
-            <section class="view" id="view-folders">
-                <div class="view-header">
-                    <h2>Папки</h2>
-                    <button class="btn-add" id="btnAddFolder">+</button>
-                </div>
-                <div class="folders-grid" id="foldersGrid">
-                    <!-- Рендерится динамически -->
-                </div>
-            </section>
-
-            <!-- Статистика -->
-            <section class="view" id="view-stats">
-                <div class="view-header"><h2>Статистика</h2></div>
-                <div class="stats-placeholder">
-                    <div class="wave-chart">
-                        <svg viewBox="0 0 300 100" preserveAspectRatio="none">
-                            <defs><linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4A90D9"/><stop offset="100%" stop-color="#9b59b6"/></linearGradient></defs>
-                            <path d="M0 80 Q30 60 60 45 T120 30 T180 55 T240 20 T300 50 L300 100 L0 100 Z" fill="url(#waveGrad)" opacity="0.3"/>
-                            <path d="M0 80 Q30 60 60 45 T120 30 T180 55 T240 20 T300 50" fill="none" stroke="url(#waveGrad)" stroke-width="2"/>
-                        </svg>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Календарь -->
-            <section class="view" id="view-calendar">
-                <div class="view-header"><h2>Календарь</h2></div>
-                <div class="calendar-placeholder">Календарь в разработке</div>
-            </section>
-
-            <!-- Настройки -->
-            <section class="view" id="view-settings">
-                <div class="view-header"><h2>Настройки</h2></div>
-                <div class="settings-placeholder">Настройки в разработке</div>
-            </section>
+            </div>
         </main>
-    </div>
 
-    <!-- Модальное окно создания задачи -->
-    <div class="modal-overlay" id="modalTask">
-        <div class="modal-panel">
-            <h3>Новая задача</h3>
-            <input type="text" id="inputTitle" placeholder="Название задачи" class="field">
-            <textarea id="inputDescription" placeholder="Описание" class="field" rows="2"></textarea>
-            <div class="field-row">
-                <input type="datetime-local" id="inputDeadline" class="field">
+        <!-- Нижняя навигационная панель -->
+        <nav class="bottom-nav">
+            <div class="nav-item active">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span>Home</span>
             </div>
-            <div class="field-row">
-                <select id="selectRemindBefore" class="field">
-                    <option value="0">В момент дедлайна</option>
-                    <option value="5">За 5 минут</option>
-                    <option value="15">За 15 минут</option>
-                    <option value="30">За 30 минут</option>
-                    <option value="60">За 1 час</option>
-                    <option value="1440">За 1 день</option>
-                </select>
-                <select id="selectRepeat" class="field">
-                    <option value="none">Без повтора</option>
-                    <option value="daily">Каждый день</option>
-                    <option value="weekly">Каждую неделю</option>
-                    <option value="monthly">Каждый месяц</option>
-                </select>
+            <div class="nav-item">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Tasks</span>
             </div>
-            <div class="field-row">
-                <select id="selectFolder" class="field"><option value="">Без папки</option></select>
+            <div class="nav-item">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Calendar</span>
             </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" id="btnCancelTask">Отмена</button>
-                <button class="btn-confirm" id="btnSaveTask">Сохранить</button>
+            <div class="nav-item">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span>Folders</span>
             </div>
-        </div>
+        </nav>
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
