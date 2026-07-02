@@ -2,28 +2,20 @@ class Store {
     constructor() {
         this.key = 'reminder_bot_tasks';
         this.tasks = this.load();
-        if (!this.tasks.length) {
-            this.seed();
-        }
+        if (!this.tasks.length) this.seed();
     }
 
     load() {
-        try {
-            const data = localStorage.getItem(this.key);
-            return data ? JSON.parse(data) : [];
-        } catch { return []; }
+        try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch { return []; }
     }
 
-    save() {
-        localStorage.setItem(this.key, JSON.stringify(this.tasks));
-    }
+    save() { localStorage.setItem(this.key, JSON.stringify(this.tasks)); }
 
     seed() {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const yesterday = new Date(today.getTime() - 86400000);
         const tomorrow = new Date(today.getTime() + 86400000);
-
         this.tasks = [
             { id: '1', title: 'Design review', notes: 'Check new mockups', deadline: new Date(today.getTime() + 14.5*3600000).toISOString(), priority: 'medium', folder: 'work', repeat: 'none', remindBefore: 15, subtasks: ['Check colors', 'Verify spacing'], completed: false, createdAt: Date.now() },
             { id: '2', title: 'Weekly report', notes: 'Send to manager', deadline: yesterday.toISOString(), priority: 'high', folder: 'work', repeat: 'weekly', remindBefore: 30, subtasks: [], completed: false, createdAt: Date.now() - 86400000 },
@@ -38,30 +30,25 @@ class Store {
 
     getAll() { return [...this.tasks]; }
     getActive() { return this.tasks.filter(t => !t.completed); }
-
     getToday() {
         const today = new Date();
         const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const end = new Date(start.getTime() + 86400000);
         return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) >= start && new Date(t.deadline) < end);
     }
-
     getOverdue() {
         const now = new Date();
         return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) < now);
     }
-
     getUpcoming() {
         const now = new Date();
         return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) >= now);
     }
-
     getByDate(date) {
         const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         const end = new Date(start.getTime() + 86400000);
         return this.tasks.filter(t => t.deadline && new Date(t.deadline) >= start && new Date(t.deadline) < end);
     }
-
     add(task) {
         task.id = Date.now().toString();
         task.createdAt = Date.now();
@@ -71,23 +58,14 @@ class Store {
         this.save();
         return task;
     }
-
     update(id, updates) {
         const idx = this.tasks.findIndex(t => t.id === id);
-        if (idx !== -1) {
-            this.tasks[idx] = { ...this.tasks[idx], ...updates };
-            this.save();
-        }
+        if (idx !== -1) { this.tasks[idx] = { ...this.tasks[idx], ...updates }; this.save(); }
     }
-
     toggle(id) {
         const task = this.tasks.find(t => t.id === id);
-        if (task) {
-            task.completed = !task.completed;
-            this.save();
-        }
+        if (task) { task.completed = !task.completed; this.save(); }
     }
-
     remove(id) {
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.save();

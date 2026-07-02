@@ -1,0 +1,151 @@
+const i18n = {
+    current: 'en',
+
+    strings: {
+        en: {
+            home: 'Home',
+            tasks: 'Tasks',
+            calendar: 'Calendar',
+            folders: 'Folders',
+            reminders: 'Reminders',
+            active: 'active',
+            overdue: 'Overdue',
+            today: 'Today',
+            upcoming: 'Upcoming',
+            tasksCount: '{n} tasks',
+            noTasks: 'No tasks found',
+            noTasksDate: 'No tasks for this date',
+            selectDate: 'Select a date to see tasks',
+            search: 'Search tasks...',
+            all: 'All',
+            week: 'Week',
+            newReminder: 'New Reminder',
+            editReminder: 'Edit Reminder',
+            taskName: 'Task name',
+            notes: 'Notes',
+            deadline: 'Deadline',
+            priority: 'Priority',
+            folder: 'Folder',
+            repeat: 'Repeat',
+            remindBefore: 'Remind before',
+            subtasks: 'Subtasks',
+            addSubtask: '+ Add subtask',
+            save: 'Save',
+            delete: 'Delete',
+            cancel: 'Cancel',
+            never: 'Never',
+            daily: 'Daily',
+            weekly: 'Weekly',
+            monthly: 'Monthly',
+            atDeadline: 'At deadline',
+            min5: '5 minutes',
+            min15: '15 minutes',
+            min30: '30 minutes',
+            hour1: '1 hour',
+            day1: '1 day',
+            none: 'None',
+            work: 'Work',
+            personal: 'Personal',
+            study: 'Study',
+            noDeadline: 'No deadline',
+            deleteConfirm: 'Delete this task?',
+            enterTaskName: 'Please enter a task name',
+            created: 'Reminder created',
+            updated: 'Reminder updated',
+            deleted: 'Reminder deleted',
+            botStart: '<b>Reminder Bot</b>\n\nCreate tasks and receive notifications in this chat.\n\n• Flexible reminder settings\n• Recurring tasks\n• Folders for organization\n• Productivity statistics\n\nPress the button below to open the app:',
+            botHelp: '<b>Help</b>\n\n<b>Commands:</b>\n/start - Main menu\n/help - This message\n/stats - Statistics\n\n<b>How to use:</b>\n1. Press "Open app"\n2. Create a task\n3. Set deadline and repeat\n4. Bot will send a notification on time',
+            botStats: '<b>Your Statistics</b>\n\nTotal tasks: {total}\nActive: {active}\nCompleted: {completed}\nCompletion rate: {rate}%',
+            notification: '<b>Reminder</b>\n\n<b>{title}</b>\n{notes}\n\nDeadline: {deadline}\nRepeat: {repeat}',
+            notificationDeadlineNow: 'Right now',
+            notificationDeadlineMinutes: '{n} min',
+            notificationDeadlineHours: '{n} h',
+            notificationDeadlineDays: '{n} d',
+        },
+        ru: {
+            home: 'Главная',
+            tasks: 'Задачи',
+            calendar: 'Календарь',
+            folders: 'Папки',
+            reminders: 'Напоминания',
+            active: 'активных',
+            overdue: 'Просрочено',
+            today: 'Сегодня',
+            upcoming: 'Предстоящие',
+            tasksCount: '{n} задач',
+            noTasks: 'Нет задач',
+            noTasksDate: 'На эту дату нет задач',
+            selectDate: 'Выберите дату для просмотра задач',
+            search: 'Поиск задач...',
+            all: 'Все',
+            week: 'Неделя',
+            newReminder: 'Новое напоминание',
+            editReminder: 'Редактировать',
+            taskName: 'Название задачи',
+            notes: 'Заметки',
+            deadline: 'Дедлайн',
+            priority: 'Приоритет',
+            folder: 'Папка',
+            repeat: 'Повтор',
+            remindBefore: 'Напомнить за',
+            subtasks: 'Подзадачи',
+            addSubtask: '+ Добавить подзадачу',
+            save: 'Сохранить',
+            delete: 'Удалить',
+            cancel: 'Отмена',
+            never: 'Никогда',
+            daily: 'Ежедневно',
+            weekly: 'Еженедельно',
+            monthly: 'Ежемесячно',
+            atDeadline: 'В момент дедлайна',
+            min5: '5 минут',
+            min15: '15 минут',
+            min30: '30 минут',
+            hour1: '1 час',
+            day1: '1 день',
+            none: 'Без папки',
+            work: 'Работа',
+            personal: 'Личное',
+            study: 'Учёба',
+            noDeadline: 'Без срока',
+            deleteConfirm: 'Удалить эту задачу?',
+            enterTaskName: 'Введите название задачи',
+            created: 'Напоминание создано',
+            updated: 'Напоминание обновлено',
+            deleted: 'Напоминание удалено',
+            botStart: '<b>Reminder Bot</b>\n\nСоздавайте задачи и получайте уведомления в этот чат.\n\n• Гибкие настройки напоминаний\n• Повторяющиеся задачи\n• Папки для организации\n• Статистика продуктивности\n\nНажмите кнопку ниже, чтобы открыть приложение:',
+            botHelp: '<b>Помощь</b>\n\n<b>Команды:</b>\n/start — Главное меню\n/help — Это сообщение\n/stats — Статистика\n\n<b>Как использовать:</b>\n1. Нажмите «Открыть приложение»\n2. Создайте задачу\n3. Настройте дедлайн и повтор\n4. Бот пришлёт уведомление вовремя',
+            botStats: '<b>Ваша статистика</b>\n\nВсего задач: {total}\nАктивных: {active}\nВыполнено: {completed}\nПроцент выполнения: {rate}%',
+            notification: '<b>Напоминание</b>\n\n<b>{title}</b>\n{notes}\n\nДедлайн: {deadline}\nПовтор: {repeat}',
+            notificationDeadlineNow: 'Прямо сейчас',
+            notificationDeadlineMinutes: '{n} мин',
+            notificationDeadlineHours: '{n} ч',
+            notificationDeadlineDays: '{n} дн',
+        }
+    },
+
+    t(key, params = {}) {
+        let str = this.strings[this.current][key] || this.strings['en'][key] || key;
+        for (const [k, v] of Object.entries(params)) {
+            str = str.replace(`{${k}}`, v);
+        }
+        return str;
+    },
+
+    setLang(lang) {
+        this.current = lang;
+        localStorage.setItem('reminder_lang', lang);
+    },
+
+    load() {
+        const saved = localStorage.getItem('reminder_lang');
+        if (saved && this.strings[saved]) {
+            this.current = saved;
+        } else {
+            const browserLang = navigator.language?.slice(0, 2);
+            this.current = browserLang === 'ru' ? 'ru' : 'en';
+        }
+    }
+};
+
+i18n.load();
