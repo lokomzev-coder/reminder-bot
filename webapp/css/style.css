@@ -570,3 +570,28 @@ body {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+/* Исправление для Telegram WebApp */
+.phone-frame {
+    -webkit-overflow-scrolling: touch;
+}
+
+.task-item, .smart-list-card, .folder-card, .calendar-day, .chip, .tab-item, .btn-circle, .lang-toggle, .invite-card {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.modal-sheet {
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-input, .search-input {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Убираем возможные блокировки */
+.phone-frame * {
+    pointer-events: auto;
+}
