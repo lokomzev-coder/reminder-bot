@@ -127,24 +127,21 @@ const app = {
     },
 
     setupLangButton() {
-        const btn = document.getElementById('langToggle');
-        if (!btn) return;
-        btn.textContent = i18n.current === 'ru' ? 'EN' : 'RU';
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.switchLanguage();
-        });
-        btn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.switchLanguage();
+        document.querySelectorAll('.lang-toggle').forEach(btn => {
+            btn.textContent = i18n.current === 'ru' ? 'EN' : 'RU';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.switchLanguage();
+            };
         });
     },
 
     switchLanguage() {
         i18n.setLang(i18n.current === 'ru' ? 'en' : 'ru');
-        document.getElementById('langToggle').textContent = i18n.current === 'ru' ? 'EN' : 'RU';
+        document.querySelectorAll('.lang-toggle').forEach(btn => {
+            btn.textContent = i18n.current === 'ru' ? 'EN' : 'RU';
+        });
         this.applyTranslations();
         this.renderHome();
         this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', document.getElementById('searchTasks')?.value || '');

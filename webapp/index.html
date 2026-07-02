@@ -7,9 +7,6 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Кнопка переключения языка -->
-    <button class="lang-toggle" id="langToggle">EN</button>
-
     <div class="phone-frame">
         <!-- Контент -->
         <div class="content" id="content">
@@ -17,9 +14,12 @@
             <div class="page active" id="page-home">
                 <div class="page-header">
                     <h1 class="page-title" data-i18n="reminders">Reminders</h1>
-                    <button class="btn-circle" id="btnAddHome">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
+                    <div class="header-actions">
+                        <button class="lang-toggle" id="langToggle">EN</button>
+                        <button class="btn-circle" id="btnAddHome">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="hero-circle-container">
@@ -74,9 +74,12 @@
             <div class="page" id="page-tasks">
                 <div class="page-header">
                     <h1 class="page-title" data-i18n="tasks">Tasks</h1>
-                    <button class="btn-circle" id="btnAddTask">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
+                    <div class="header-actions">
+                        <button class="lang-toggle" id="langToggleTasks">EN</button>
+                        <button class="btn-circle" id="btnAddTask">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="search-bar">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -95,9 +98,12 @@
             <div class="page" id="page-calendar">
                 <div class="page-header">
                     <h1 class="page-title" data-i18n="calendar">Calendar</h1>
-                    <button class="btn-circle" id="btnAddCalendar">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
+                    <div class="header-actions">
+                        <button class="lang-toggle" id="langToggleCalendar">EN</button>
+                        <button class="btn-circle" id="btnAddCalendar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="month-nav">
                     <button class="month-arrow" id="prevMonth"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -117,9 +123,12 @@
             <div class="page" id="page-folders">
                 <div class="page-header">
                     <h1 class="page-title" data-i18n="folders">Folders</h1>
-                    <button class="btn-circle" id="btnAddFolder">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
+                    <div class="header-actions">
+                        <button class="lang-toggle" id="langToggleFolders">EN</button>
+                        <button class="btn-circle" id="btnAddFolder">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="folders-list" id="foldersList">
                     <div class="folder-card">
@@ -168,7 +177,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно создания/редактирования -->
+    <!-- Модальное окно -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-sheet">
             <div class="modal-handle"></div>
