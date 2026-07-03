@@ -6,10 +6,7 @@ class Store {
         if (!this.tasks.length) this.seed();
     }
 
-    load() {
-        try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch { return []; }
-    }
-
+    load() { try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch { return []; } }
     save() { localStorage.setItem(this.key, JSON.stringify(this.tasks)); }
 
     seed() {
@@ -31,89 +28,42 @@ class Store {
 
     getAll() { return [...this.tasks]; }
     getActive() { return this.tasks.filter(t => !t.completed); }
-
     getToday() {
         const today = new Date();
         const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const end = new Date(start.getTime() + 86400000);
         return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) >= start && new Date(t.deadline) < end);
     }
-
-    getOverdue() {
-        const now = new Date();
-        return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) < now);
-    }
-
-    getUpcoming() {
-        const now = new Date();
-        return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) >= now);
-    }
-
+    getOverdue() { const now = new Date(); return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) < now); }
+    getUpcoming() { const now = new Date(); return this.tasks.filter(t => !t.completed && t.deadline && new Date(t.deadline) >= now); }
     getByDate(date) {
         const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         const end = new Date(start.getTime() + 86400000);
         return this.tasks.filter(t => t.deadline && new Date(t.deadline) >= start && new Date(t.deadline) < end);
     }
-
     add(task) {
         task.id = Date.now().toString();
         task.createdAt = Date.now();
         task.completed = false;
-        task.subtasks = task.subtasks || [];
         task.customReminders = task.customReminders || [];
         this.tasks.unshift(task);
         this.save();
         return task;
     }
-
     update(id, updates) {
         const idx = this.tasks.findIndex(t => t.id === id);
         if (idx !== -1) { this.tasks[idx] = { ...this.tasks[idx], ...updates }; this.save(); }
     }
+    toggle(id) { const t = this.tasks.find(x => x.id === id); if (t) { t.completed = !t.completed; this.save(); } }
+    remove(id) { this.tasks = this.tasks.filter(t => t.id !== id); this.save(); }
 
-    toggle(id) {
-        const task = this.tasks.find(t => t.id === id);
-        if (task) { task.completed = !task.completed; this.save(); }
-    }
-
-    remove(id) {
-        this.tasks = this.tasks.filter(t => t.id !== id);
-        this.save();
-    }
-
-    // Folders
     getFolders() {
-        try {
-            return JSON.parse(localStorage.getItem(this.folderKey)) || [
-                { id: 'work', name: 'Work', color: '#7c5ce7' },
-                { id: 'personal', name: 'Personal', color: '#2ecc71' },
-                { id: 'study', name: 'Study', color: '#4A90D9' }
-            ];
-        } catch { return []; }
+        try { return JSON.parse(localStorage.getItem(this.folderKey)) || [{ id: 'work', name: 'Work', color: '#7c5ce7' },{ id: 'personal', name: 'Personal', color: '#2ecc71' },{ id: 'study', name: 'Study', color: '#4A90D9' }]; } catch { return []; }
     }
-
-    saveFolders(folders) {
-        localStorage.setItem(this.folderKey, JSON.stringify(folders));
-    }
-
-    addFolder(name, color) {
-        const folders = this.getFolders();
-        folders.push({ id: Date.now().toString(), name, color: color || '#7c5ce7' });
-        this.saveFolders(folders);
-    }
-
-    updateFolder(id, name) {
-        const folders = this.getFolders();
-        const f = folders.find(x => x.id === id);
-        if (f) { f.name = name; this.saveFolders(folders); }
-    }
-
-    removeFolder(id) {
-        const folders = this.getFolders().filter(x => x.id !== id);
-        this.saveFolders(folders);
-        this.tasks.forEach(t => { if (t.folder === id) t.folder = null; });
-        this.save();
-    }
+    saveFolders(folders) { localStorage.setItem(this.folderKey, JSON.stringify(folders)); }
+    addFolder(name, color) { const f = this.getFolders(); f.push({ id: Date.now().toString(), name, color: color || '#7c5ce7' }); this.saveFolders(f); }
+    updateFolder(id, name) { const f = this.getFolders(); const x = f.find(y => y.id === id); if (x) { x.name = name; this.saveFolders(f); } }
+    removeFolder(id) { this.saveFolders(this.getFolders().filter(x => x.id !== id)); this.tasks.forEach(t => { if (t.folder === id) t.folder = null; }); this.save(); }
 }
 
 const store = new Store();
