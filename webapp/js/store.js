@@ -70,6 +70,32 @@ class Store {
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.save();
     }
+    addFolder(name) {
+        const folders = this.getFolders();
+        folders.push({ id: Date.now().toString(), name, color: '#7c5ce7' });
+        localStorage.setItem('reminder_folders', JSON.stringify(folders));
+    }
+
+    getFolders() {
+        try { return JSON.parse(localStorage.getItem('reminder_folders')) || [
+            { id: 'work', name: 'Work', color: '#7c5ce7' },
+            { id: 'personal', name: 'Personal', color: '#2ecc71' },
+            { id: 'study', name: 'Study', color: '#4A90D9' }
+        ]; } catch { return []; }
+    }
+
+    updateFolder(id, name) {
+        const folders = this.getFolders();
+        const f = folders.find(x => x.id === id);
+        if (f) { f.name = name; localStorage.setItem('reminder_folders', JSON.stringify(folders)); }
+    }
+
+    removeFolder(id) {
+        const folders = this.getFolders().filter(x => x.id !== id);
+        localStorage.setItem('reminder_folders', JSON.stringify(folders));
+        this.tasks.forEach(t => { if (t.folder === id) t.folder = null; });
+        this.save();
+    }
 }
 
 const store = new Store();

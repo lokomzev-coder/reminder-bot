@@ -86,34 +86,6 @@
             <div id="calTasks"></div>
         </div>
 
-        <!-- Folders -->
-        <div class="screen" id="screen-folders">
-            <div class="topbar">
-                <h1 data-i18n="folders">Folders</h1>
-                <div class="topbar-actions">
-                    <button class="lang-btn" id="langBtnFolders">EN</button>
-                    <button class="add-btn" id="addFolderBtn">+</button>
-                </div>
-            </div>
-            <div class="list" id="folderList">
-                <div class="folder-row">
-                    <div class="folder-dot" style="background:#7c5ce7"></div>
-                    <span data-i18n="work">Work</span>
-                    <span class="folder-num">5</span>
-                </div>
-                <div class="folder-row">
-                    <div class="folder-dot" style="background:#2ecc71"></div>
-                    <span data-i18n="personal">Personal</span>
-                    <span class="folder-num">3</span>
-                </div>
-                <div class="folder-row">
-                    <div class="folder-dot" style="background:#4A90D9"></div>
-                    <span data-i18n="study">Study</span>
-                    <span class="folder-num">2</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Tab bar -->
         <div class="tabs">
             <div class="tab on" data-screen="home">
@@ -128,9 +100,9 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
                 <span data-i18n="calendar">Calendar</span>
             </div>
-            <div class="tab" data-screen="folders">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                <span data-i18n="folders">Folders</span>
+            <div class="tab" data-screen="settings">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <span data-i18n="settings">Settings</span>
             </div>
         </div>
     </div>
@@ -180,10 +152,26 @@
                 <option value="1440" data-i18n="day1">1 day</option>
             </select>
 
+            <label data-i18n="customReminders">Custom reminders</label>
+                <div id="customRemindersList"></div>
+                <button class="add-sub-btn" id="addCustomReminderBtn" data-i18n="addReminder">+ Add reminder time</button>
+
             <div class="modal-btns">
                 <button class="del-btn" id="delBtn" style="display:none" data-i18n="delete">Delete</button>
                 <button class="save-btn" id="saveBtn" data-i18n="save">Save</button>
             </div>
+        </div>
+                <!-- Settings -->
+        <div class="screen" id="screen-settings">
+            <div class="topbar">
+                <h1 data-i18n="settings">Settings</h1>
+                <div class="topbar-actions">
+                    <button class="lang-btn" id="langBtnSettings">EN</button>
+                </div>
+            </div>
+            <div class="section-title" data-i18n="folders">Folders</div>
+            <div class="list" id="settingsFolderList"></div>
+            <button class="add-folder-btn" id="addFolderSettingsBtn" data-i18n="addFolder">+ Add folder</button>
         </div>
     </div>
 
