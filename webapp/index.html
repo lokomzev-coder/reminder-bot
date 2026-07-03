@@ -56,7 +56,7 @@
             </div>
             <div class="search-box">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Search tasks..." id="searchInput">
+                <input type="text" data-i18n="search" placeholder="Search tasks..." id="searchInput">
             </div>
             <div class="chips">
                 <span class="chip on" data-filter="all" data-i18n="all">All</span>
@@ -96,9 +96,21 @@
                 </div>
             </div>
             <div class="list" id="folderList">
-                <div class="folder-row"><div class="folder-dot" style="background:#7c5ce7"></div><span>Work</span><span class="folder-num">5</span></div>
-                <div class="folder-row"><div class="folder-dot" style="background:#2ecc71"></div><span>Personal</span><span class="folder-num">3</span></div>
-                <div class="folder-row"><div class="folder-dot" style="background:#4A90D9"></div><span>Study</span><span class="folder-num">2</span></div>
+                <div class="folder-row">
+                    <div class="folder-dot" style="background:#7c5ce7"></div>
+                    <span data-i18n="work">Work</span>
+                    <span class="folder-num">5</span>
+                </div>
+                <div class="folder-row">
+                    <div class="folder-dot" style="background:#2ecc71"></div>
+                    <span data-i18n="personal">Personal</span>
+                    <span class="folder-num">3</span>
+                </div>
+                <div class="folder-row">
+                    <div class="folder-dot" style="background:#4A90D9"></div>
+                    <span data-i18n="study">Study</span>
+                    <span class="folder-num">2</span>
+                </div>
             </div>
         </div>
 
@@ -126,26 +138,51 @@
     <!-- Modal -->
     <div class="modal" id="modal">
         <div class="modal-box">
-            <h3 id="modalTitle">New Reminder</h3>
-            <input type="text" class="field" id="inpTitle" placeholder="Task name">
-            <textarea class="field" id="inpDesc" placeholder="Notes" rows="2"></textarea>
-            <label>Deadline</label>
+            <h3 id="modalTitle" data-i18n="newReminder">New Reminder</h3>
+
+            <input type="text" class="field" id="inpTitle" data-i18n="taskName" placeholder="Task name">
+
+            <textarea class="field" id="inpDesc" data-i18n="notes" placeholder="Notes" rows="2"></textarea>
+
+            <label data-i18n="deadline">Deadline</label>
             <input type="datetime-local" class="field" id="inpDeadline">
-            <label>Priority</label>
+
+            <label data-i18n="priority">Priority</label>
             <div class="prio" id="prioSelect">
                 <span class="prio-btn" data-p="low">!</span>
                 <span class="prio-btn on" data-p="medium">!!</span>
                 <span class="prio-btn" data-p="high">!!!</span>
             </div>
-            <label>Folder</label>
-            <select class="field" id="inpFolder"><option value="">None</option><option value="work">Work</option><option value="personal">Personal</option><option value="study">Study</option></select>
-            <label>Repeat</label>
-            <select class="field" id="inpRepeat"><option value="none">Never</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
-            <label>Remind before</label>
-            <select class="field" id="inpRemind"><option value="0">At deadline</option><option value="5">5 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">1 hour</option><option value="1440">1 day</option></select>
+
+            <label data-i18n="folder">Folder</label>
+            <select class="field" id="inpFolder">
+                <option value="" data-i18n="none">None</option>
+                <option value="work" data-i18n="work">Work</option>
+                <option value="personal" data-i18n="personal">Personal</option>
+                <option value="study" data-i18n="study">Study</option>
+            </select>
+
+            <label data-i18n="repeat">Repeat</label>
+            <select class="field" id="inpRepeat">
+                <option value="none" data-i18n="never">Never</option>
+                <option value="daily" data-i18n="daily">Daily</option>
+                <option value="weekly" data-i18n="weekly">Weekly</option>
+                <option value="monthly" data-i18n="monthly">Monthly</option>
+            </select>
+
+            <label data-i18n="remindBefore">Remind before</label>
+            <select class="field" id="inpRemind">
+                <option value="0" data-i18n="atDeadline">At deadline</option>
+                <option value="5" data-i18n="min5">5 minutes</option>
+                <option value="15" data-i18n="min15">15 minutes</option>
+                <option value="30" data-i18n="min30">30 minutes</option>
+                <option value="60" data-i18n="hour1">1 hour</option>
+                <option value="1440" data-i18n="day1">1 day</option>
+            </select>
+
             <div class="modal-btns">
-                <button class="del-btn" id="delBtn" style="display:none">Delete</button>
-                <button class="save-btn" id="saveBtn">Save</button>
+                <button class="del-btn" id="delBtn" style="display:none" data-i18n="delete">Delete</button>
+                <button class="save-btn" id="saveBtn" data-i18n="save">Save</button>
             </div>
         </div>
     </div>

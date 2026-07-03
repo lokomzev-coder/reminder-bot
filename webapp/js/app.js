@@ -89,9 +89,19 @@ const app = {
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = text;
             else el.textContent = text;
         });
-        document.querySelectorAll('.field[placeholder]').forEach(el => {
-            const key = Object.keys(i18n.strings[i18n.current]).find(k => i18n.strings[i18n.current][k] === el.getAttribute('data-placeholder'));
-        });
+        // Обновим лейблы в модалке если она открыта
+        if (document.getElementById('modal').classList.contains('show')) {
+            document.querySelectorAll('.modal-box label').forEach((label, i) => {
+                const keys = ['deadline', 'priority', 'folder', 'repeat', 'remindBefore'];
+                if (keys[i]) label.textContent = i18n.t(keys[i]);
+            });
+            document.getElementById('delBtn').textContent = i18n.t('delete');
+            document.getElementById('saveBtn').textContent = i18n.t('save');
+            document.getElementById('inpTitle').placeholder = i18n.t('taskName');
+            document.getElementById('inpDesc').placeholder = i18n.t('notes');
+            if (this.editingId) document.getElementById('modalTitle').textContent = i18n.t('editReminder');
+            else document.getElementById('modalTitle').textContent = i18n.t('newReminder');
+        }
     },
 
     refresh() {
@@ -233,7 +243,41 @@ const app = {
     openModal(id) {
         this.editingId = id;
         document.getElementById('delBtn').style.display = id ? 'block' : 'none';
-        document.getElementById('modalTitle').textContent = id ? 'Edit' : 'New Reminder';
+        document.getElementById('modalTitle').textContent = id ? i18n.t('editReminder') : i18n.t('newReminder');
+
+        // Перевод плейсхолдеров
+        document.getElementById('inpTitle').placeholder = i18n.t('taskName');
+        document.getElementById('inpDesc').placeholder = i18n.t('notes');
+
+        // Перевод label
+        document.querySelectorAll('.modal-box label').forEach((label, i) => {
+            const keys = ['deadline', 'priority', 'folder', 'repeat', 'remindBefore'];
+            if (keys[i]) label.textContent = i18n.t(keys[i]);
+        });
+
+        // Перевод select options
+        const folderOpts = document.getElementById('inpFolder').options;
+        folderOpts[0].textContent = i18n.t('none');
+        folderOpts[1].textContent = i18n.t('work');
+        folderOpts[2].textContent = i18n.t('personal');
+        folderOpts[3].textContent = i18n.t('study');
+
+        const repeatOpts = document.getElementById('inpRepeat').options;
+        repeatOpts[0].textContent = i18n.t('never');
+        repeatOpts[1].textContent = i18n.t('daily');
+        repeatOpts[2].textContent = i18n.t('weekly');
+        repeatOpts[3].textContent = i18n.t('monthly');
+
+        const remindOpts = document.getElementById('inpRemind').options;
+        remindOpts[0].textContent = i18n.t('atDeadline');
+        remindOpts[1].textContent = i18n.t('min5');
+        remindOpts[2].textContent = i18n.t('min15');
+        remindOpts[3].textContent = i18n.t('min30');
+        remindOpts[4].textContent = i18n.t('hour1');
+        remindOpts[5].textContent = i18n.t('day1');
+
+        document.getElementById('delBtn').textContent = i18n.t('delete');
+        document.getElementById('saveBtn').textContent = i18n.t('save');
 
         if (id) {
             const t = store.getAll().find(x => x.id === id);
@@ -259,10 +303,12 @@ const app = {
             document.querySelector('.prio-btn[data-p="medium"]')?.classList.add('on');
         }
         document.getElementById('modal').classList.add('show');
+        document.body.classList.add('modal-open');
     },
 
     closeModal() {
         document.getElementById('modal').classList.remove('show');
+        document.body.classList.remove('modal-open');
         this.editingId = null;
     },
 

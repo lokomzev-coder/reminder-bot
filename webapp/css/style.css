@@ -259,3 +259,32 @@ label { display: block; font-size: 11px; color: rgba(255,255,255,0.4); text-tran
     background: #7c5ce7; border: none;
     border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
 }
+/* Фикс модалки — только вертикальный скролл */
+.modal-box {
+    overscroll-behavior: contain;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-box * {
+    max-width: 100%;
+}
+
+/* Чтобы body не скроллился при открытой модалке */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.6);
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+}

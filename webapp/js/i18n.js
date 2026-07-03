@@ -61,6 +61,8 @@ const i18n = {
             notificationDeadlineMinutes: '{n} min',
             notificationDeadlineHours: '{n} h',
             notificationDeadlineDays: '{n} d',
+            editReminder: 'Edit Reminder',
+            taskName: 'Task name',
         },
         ru: {
             home: 'Главная',
@@ -121,6 +123,8 @@ const i18n = {
             notificationDeadlineMinutes: '{n} мин',
             notificationDeadlineHours: '{n} ч',
             notificationDeadlineDays: '{n} дн',
+            editReminder: 'Редактировать',
+            taskName: 'Название задачи',
         }
     },
 
