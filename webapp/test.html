@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #0d0d1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+        button {
+            padding: 16px 32px;
+            background: #7c5ce7;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 200px;
+        }
+        button:active {
+            background: #9b7cf0;
+        }
+        .result {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+    </style>
+</head>
+<body>
+    <h2>Click Test</h2>
+    <button onclick="handleClick()">Click Me</button>
+    <button id="btn2">Button 2</button>
+    <button id="btn3">Button 3</button>
+    <div class="result" id="result">No clicks yet</div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        let count = 0;
+
+        function handleClick() {
+            count++;
+            document.getElementById('result').textContent = 'Clicked: ' + count;
+        }
+
+        document.getElementById('btn2').addEventListener('click', function() {
+            count++;
+            document.getElementById('result').textContent = 'Clicked: ' + count;
+        });
+
+        document.getElementById('btn3').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            count++;
+            document.getElementById('result').textContent = 'Clicked: ' + count;
+        });
+
+        // Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            document.getElementById('result').textContent = 'Telegram WebApp ready. Clicks: 0';
+        } else {
+            document.getElementById('result').textContent = 'NOT in Telegram. Clicks: 0';
+        }
+    </script>
+</body>
+</html>
