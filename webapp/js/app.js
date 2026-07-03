@@ -1,14 +1,20 @@
 const app = {
     tg: null, editingId: null, calDate: new Date(), selDate: null,
 
-    init() {
+    async init() {
         this.tg = window.Telegram?.WebApp;
-        if (this.tg) { this.tg.ready(); this.tg.expand(); this.tg.MainButton?.hide(); }
-
+        if (this.tg) { this.tg.ready(); this.tg.expand(); }
+    
+        // Ждём загрузки данных из Supabase
+        await store.init();
+        
+        // Подписываемся на изменения
+        store.onChange(() => this.refresh());
+    
         const updateLangBtn = () => document.querySelectorAll('.lang-btn').forEach(b => b.textContent = i18n.current === 'ru' ? 'EN' : 'RU');
         updateLangBtn();
         document.querySelectorAll('.lang-btn').forEach(b => b.onclick = () => { i18n.setLang(i18n.current === 'ru' ? 'en' : 'ru'); updateLangBtn(); this.applyI18n(); this.refresh(); });
-
+    
         document.querySelectorAll('.tab').forEach(tab => tab.onclick = () => {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('on')); tab.classList.add('on');
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -16,7 +22,7 @@ const app = {
             if (tab.dataset.screen === 'calendar') this.renderCalendar();
             if (tab.dataset.screen === 'settings') this.renderFolders();
         });
-
+    
         document.getElementById('addHomeBtn').onclick = () => this.openModal();
         document.getElementById('addTaskBtn').onclick = () => this.openModal();
         document.getElementById('addCalBtn').onclick = () => this.openModal();
@@ -24,12 +30,12 @@ const app = {
         document.getElementById('cardOverdue').onclick = () => this.goToTasks('overdue');
         document.getElementById('cardToday').onclick = () => this.goToTasks('today');
         document.getElementById('cardUpcoming').onclick = () => this.goToTasks('week');
-
+    
         document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
             document.querySelectorAll('.chip').forEach(x => x.classList.remove('on')); c.classList.add('on');
             this.renderTasks(c.dataset.filter);
         });
-
+    
         document.getElementById('searchInput').oninput = () => this.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
         document.getElementById('modal').onclick = e => { if (e.target === document.getElementById('modal')) this.closeModal(); };
         document.getElementById('saveBtn').onclick = () => this.saveTask();
@@ -38,7 +44,7 @@ const app = {
         document.getElementById('addCustomReminderBtn').onclick = () => this.addCustomReminder();
         document.getElementById('prevMonth').onclick = () => { this.calDate.setMonth(this.calDate.getMonth() - 1); this.renderCalendar(); };
         document.getElementById('nextMonth').onclick = () => { this.calDate.setMonth(this.calDate.getMonth() + 1); this.renderCalendar(); };
-
+    
         this.applyI18n(); this.renderHome(); this.renderTasks('all');
     },
 
@@ -251,21 +257,43 @@ const app = {
         }).filter(m => m > 0);
     },
 
-    saveTask() {
-        const title = document.getElementById('inpTitle')?.value?.trim();
-        if (!title) { if (this.tg) this.tg.showAlert(i18n.t('enterTaskName')); return; }
+    async saveTask() {
+        const inpTitle = document.getElementById('inpTitle');
+        const title = inpTitle?.value?.trim();
+        if (!title) {
+            if (this.tg) this.tg.showAlert(i18n.t('enterTaskName'));
+            return;
+        }
+        
+        // Исправляем формат даты
+        let deadline = document.getElementById('inpDeadline')?.value || null;
+        if (deadline) {
+            deadline = deadline.replace(' ', 'T') + ':00+00:00';
+        }
+        
         const data = {
-            title, notes: document.getElementById('inpDesc')?.value?.trim() || '',
-            deadline: document.getElementById('inpDeadline')?.value || null,
+            title,
+            description: document.getElementById('inpDesc')?.value?.trim() || '',
+            deadline: deadline,
             priority: document.querySelector('.prio-btn.on')?.dataset.p || 'medium',
-            folder: document.getElementById('inpFolder')?.value || null,
-            repeat: document.getElementById('inpRepeat')?.value || 'none',
-            remindBefore: parseInt(document.getElementById('inpRemind')?.value || '0'),
-            customReminders: this.getCustomReminders(),
+            folder_id: document.getElementById('inpFolder')?.value || null,
+            repeat_type: document.getElementById('inpRepeat')?.value || 'none',
+            remind_before: parseInt(document.getElementById('inpRemind')?.value || '0'),
+            custom_reminders: this.getCustomReminders(),
         };
-        if (this.editingId) store.update(this.editingId, data); else store.add(data);
-        if (this.tg) { this.tg.HapticFeedback?.notificationOccurred('success'); try { Telegram.WebApp.sendData(JSON.stringify({ action: 'create_reminder', ...data, lang: i18n.current })); } catch(e) {} }
-        this.closeModal(); this.renderHome(); this.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
+    
+        if (this.editingId) {
+            await store.update(this.editingId, data);
+        } else {
+            await store.add(data);
+        }
+    
+        if (this.tg) {
+            this.tg.HapticFeedback?.notificationOccurred('success');
+        }
+    
+        this.closeModal();
+        this.refresh();
     },
 
     deleteTask() {
