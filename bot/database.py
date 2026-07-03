@@ -39,10 +39,16 @@ class Database:
             remind_before = data.get("remind_before", 0)
             custom_reminders = data.get("customReminders", [])
 
+            # Исправляем формат даты
+            if deadline:
+                deadline = deadline.replace(" 00:00", "+00:00").replace(" ", "T")
+                if "T" in deadline and "+" not in deadline and "Z" not in deadline:
+                    deadline += "+00:00"
+
             next_remind_at = None
             if deadline:
                 try:
-                    deadline_dt = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+                    deadline_dt = datetime.fromisoformat(deadline)
                     now = datetime.now(timezone.utc)
 
                     all_times = []
