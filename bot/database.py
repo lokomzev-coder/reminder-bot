@@ -1,7 +1,7 @@
 from supabase import create_client, Client
 from config import SUPABASE_URL, SUPABASE_KEY, SUPABASE_SERVICE_KEY
 from typing import Optional, List, Dict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 supabase_admin: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
@@ -35,43 +35,49 @@ class Database:
     @staticmethod
     async def save_reminder(user_id: int, data: Dict) -> Optional[Dict]:
         try:
+            deadline = data.get("deadline")
+            remind_before = data.get("remind_before", 0)
+            custom_reminders = data.get("customReminders", [])
+
+            next_remind_at = None
+            if deadline:
+                try:
+                    deadline_dt = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+                    now = datetime.now(timezone.utc)
+
+                    all_times = []
+                    if remind_before > 0:
+                        all_times.append(deadline_dt - timedelta(minutes=remind_before))
+                    else:
+                        all_times.append(deadline_dt)
+
+                    for mins in custom_reminders:
+                        if mins > 0:
+                            all_times.append(deadline_dt - timedelta(minutes=mins))
+
+                    future = [t for t in all_times if t > now]
+                    if future:
+                        next_remind_at = min(future).isoformat()
+                except Exception as e:
+                    print(f"Error calculating next_remind_at: {e}")
+
             reminder = supabase_admin.table("reminders").insert({
                 "user_id": user_id,
-                "folder_id": data.get("folder_id"),
+                "folder_id": data.get("folder"),
                 "title": data["title"],
                 "description": data.get("notes", ""),
-                "deadline": data.get("deadline"),
-                "remind_before": data.get("remind_before", 0),
+                "deadline": deadline,
+                "remind_before": remind_before,
                 "repeat_type": data.get("repeat", "none"),
                 "repeat_interval": 1,
-                "is_completed": False
+                "is_completed": False,
+                "next_remind_at": next_remind_at
             }).execute()
+
             return reminder.data[0] if reminder.data else None
         except Exception as e:
             print(f"Error save_reminder: {e}")
             return None
-
-    @staticmethod
-    async def get_pending_reminders() -> List[Dict]:
-        try:
-            now = datetime.now(timezone.utc).isoformat()
-            result = supabase_admin.table("reminders")\
-                .select("*")\
-                .eq("is_completed", False)\
-                .lte("next_remind_at", now)\
-                .not_.is_("next_remind_at", "null")\
-                .execute()
-            return result.data if result.data else []
-        except Exception as e:
-            print(f"Error get_pending: {e}")
-            return []
-
-    @staticmethod
-    async def update_reminder(reminder_id: str, data: Dict):
-        try:
-            supabase_admin.table("reminders").update(data).eq("id", reminder_id).execute()
-        except Exception as e:
-            print(f"Error update_reminder: {e}")
 
     @staticmethod
     async def get_stats(user_id: int) -> Dict:
