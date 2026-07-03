@@ -1,6 +1,8 @@
-* * {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    margin:0; padding:0; box-sizing:border-box;
 }
 
 body {
@@ -11,6 +13,12 @@ body {
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+}
+
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
 }
 
 .app {
@@ -106,6 +114,7 @@ body {
     gap: 12px;
     cursor: pointer;
 }
+.card:active { background: rgba(255,255,255,0.05); transform: scale(0.98); }
 .card.overdue { border-left: 3px solid #f97316; }
 .card-icon {
     width: 36px; height: 36px;
@@ -141,6 +150,7 @@ body {
     font-size: 13px;
     cursor: pointer;
 }
+.chip:active { background: rgba(255,255,255,0.08); }
 .chip.on { background: rgba(124,92,231,0.2); border-color: rgba(124,92,231,0.4); color: #7c5ce7; }
 
 /* Task list */
@@ -154,9 +164,37 @@ body {
     align-items: flex-start;
     gap: 10px;
     cursor: pointer;
+    overflow: hidden;
+    position: relative;
 }
+.task:active { background: rgba(255,255,255,0.05); }
 .task.overdue { border-left: 2.5px solid #f97316; }
 .task.done { opacity: 0.5; }
+
+.task.swipe-delete::before {
+    content: 'Delete';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #e74c3c;
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.task.swipe-complete::before {
+    content: 'Done';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2ecc71;
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
 .task-check {
     width: 20px; height: 20px;
     border-radius: 50%;
@@ -164,7 +202,7 @@ body {
     flex-shrink: 0; margin-top: 2px;
 }
 .task-check.on { background: #7c5ce7; border-color: #7c5ce7; }
-.task-body { flex: 1; min-width: 0; }
+.task-body { flex: 1; min-width: 0; overflow: hidden; }
 .task-body .t { font-size: 14px; font-weight: 500; }
 .task-body .n { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 2px; }
 .task-body .m {
@@ -198,6 +236,7 @@ body {
     border-radius: 50%; font-size: 14px; cursor: pointer;
     position: relative;
 }
+.cal-day:active { background: rgba(255,255,255,0.05); }
 .cal-day.dim { color: rgba(255,255,255,0.2); }
 .cal-day.now { background: #7c5ce7; font-weight: 700; }
 .cal-day.sel { border: 2px solid #7c5ce7; }
@@ -207,111 +246,7 @@ body {
 }
 .cal-day.now.dot::after { background: #fff; }
 
-/* Folders */
-.folder-row {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-}
-.folder-dot { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; }
-.folder-row span:nth-child(2) { flex: 1; font-size: 15px; font-weight: 500; }
-.folder-num { font-size: 13px; color: rgba(255,255,255,0.3); }
-
-/* Tab bar */
-.tabs {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 12px 28px;
-    background: rgba(13,13,26,0.9);
-    border-top: 1px solid rgba(255,255,255,0.05);
-    flex-shrink: 0;
-}
-.tab {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    color: rgba(255,255,255,0.3); cursor: pointer; padding: 6px 12px; border-radius: 8px;
-}
-.tab.on { color: #7c5ce7; }
-.tab span { font-size: 10px; font-weight: 500; }
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(0,0,0,0.6);
-    align-items: flex-end; justify-content: center;
-}
-.modal.show { display: flex; }
-.modal-box {
-    width: 100%; max-width: 430px; max-height: 85vh;
-    background: #1a1a2e;
-    border-radius: 20px 20px 0 0;
-    padding: 16px 20px 28px;
-    overflow-y: auto;
-}
-.modal-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
-.field {
-    width: 100%; padding: 12px 14px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    color: #fff; font-size: 15px; font-family: inherit;
-    margin-bottom: 12px; outline: none;
-}
-.field::placeholder { color: rgba(255,255,255,0.3); }
-label { display: block; font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
-.prio { display: flex; gap: 8px; margin-bottom: 12px; }
-.prio-btn {
-    padding: 8px 16px; border-radius: 8px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 700; cursor: pointer;
-}
-.prio-btn.on { background: rgba(124,92,231,0.2); border-color: #7c5ce7; color: #7c5ce7; }
-.modal-btns { display: flex; gap: 10px; margin-top: 16px; }
-.del-btn {
-    flex: 1; padding: 14px;
-    background: transparent; border: 1px solid rgba(231,76,60,0.3);
-    border-radius: 10px; color: #e74c3c; font-size: 15px; font-weight: 600; cursor: pointer;
-}
-.save-btn {
-    flex: 2; padding: 14px;
-    background: #7c5ce7; border: none;
-    border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
-}
-/* Фикс модалки — только вертикальный скролл */
-.modal-box {
-    overscroll-behavior: contain;
-    overflow-x: hidden;
-    overflow-y: auto;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
-}
-
-.modal-box * {
-    max-width: 100%;
-}
-
-/* Чтобы body не скроллился при открытой модалке */
-body.modal-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-}
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: rgba(0,0,0,0.6);
-    align-items: flex-end;
-    justify-content: center;
-    overflow: hidden;
-}
+/* Settings */
 .section-title {
     font-size: 13px;
     font-weight: 600;
@@ -347,12 +282,13 @@ body.modal-open {
     cursor: pointer;
     margin-bottom: 6px;
 }
+.folder-row:active { background: rgba(255,255,255,0.05); }
 
-.folder-row-actions {
-    display: flex;
-    gap: 6px;
-    margin-left: auto;
-}
+.folder-dot { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; }
+.folder-row span:nth-child(2) { flex: 1; font-size: 15px; font-weight: 500; }
+.folder-num { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+.folder-row-actions { display: flex; gap: 6px; margin-left: auto; }
 
 .folder-edit-btn, .folder-del-btn {
     width: 30px; height: 30px;
@@ -366,43 +302,74 @@ body.modal-open {
     justify-content: center;
     font-size: 12px;
 }
-
+.folder-edit-btn:active { background: rgba(255,255,255,0.08); }
 .folder-del-btn { color: #e74c3c; border-color: rgba(231,76,60,0.2); }
-.task {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    padding: 13px 14px;
+.folder-del-btn:active { background: rgba(231,76,60,0.1); }
+
+/* Tab bar */
+.tabs {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    cursor: pointer;
+    justify-content: space-around;
+    padding: 10px 12px 28px;
+    background: rgba(13,13,26,0.9);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    flex-shrink: 0;
+}
+.tab {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: rgba(255,255,255,0.3); cursor: pointer; padding: 6px 12px; border-radius: 8px;
+}
+.tab:active { color: rgba(255,255,255,0.5); }
+.tab.on { color: #7c5ce7; }
+.tab span { font-size: 10px; font-weight: 500; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.6);
+    align-items: flex-end; justify-content: center;
     overflow: hidden;
 }
-
-.task.swipe-delete::before {
-    content: 'Delete';
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #e74c3c;
-    font-size: 13px;
-    font-weight: 600;
-    pointer-events: none;
+.modal.show { display: flex; }
+.modal-box {
+    width: 100%; max-width: 430px; max-height: 85vh;
+    background: #1a1a2e;
+    border-radius: 20px 20px 0 0;
+    padding: 16px 20px 28px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
 }
-
-.task.swipe-complete::before {
-    content: 'Done';
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #2ecc71;
-    font-size: 13px;
-    font-weight: 600;
-    pointer-events: none;
+.modal-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+.field {
+    width: 100%; padding: 12px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: #fff; font-size: 15px; font-family: inherit;
+    margin-bottom: 12px; outline: none;
 }
+.field::placeholder { color: rgba(255,255,255,0.3); }
+.modal-box label {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+.prio { display: flex; gap: 8px; margin-bottom: 12px; }
+.prio-btn {
+    padding: 8px 16px; border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.prio-btn:active { background: rgba(255,255,255,0.08); }
+.prio-btn.on { background: rgba(124,92,231,0.2); border-color: #7c5ce7; color: #7c5ce7; }
+
 .add-sub-btn {
     background: none;
     border: none;
@@ -419,9 +386,7 @@ body.modal-open {
     gap: 8px;
     margin-bottom: 6px;
 }
-
 .reminder-row input {
-    flex: 1;
     padding: 10px 12px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -430,7 +395,6 @@ body.modal-open {
     font-size: 13px;
     outline: none;
 }
-
 .reminder-row select {
     padding: 10px 8px;
     background: rgba(255,255,255,0.05);
@@ -440,7 +404,6 @@ body.modal-open {
     font-size: 13px;
     outline: none;
 }
-
 .reminder-remove {
     background: none;
     border: none;
@@ -449,3 +412,17 @@ body.modal-open {
     font-size: 16px;
     padding: 4px;
 }
+
+.modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+.del-btn {
+    flex: 1; padding: 14px;
+    background: transparent; border: 1px solid rgba(231,76,60,0.3);
+    border-radius: 10px; color: #e74c3c; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.del-btn:active { background: rgba(231,76,60,0.1); }
+.save-btn {
+    flex: 2; padding: 14px;
+    background: #7c5ce7; border: none;
+    border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.save-btn:active { background: #6a4dd4; }

@@ -86,6 +86,19 @@
             <div id="calTasks"></div>
         </div>
 
+        <!-- Settings -->
+        <div class="screen" id="screen-settings">
+            <div class="topbar">
+                <h1 data-i18n="settings">Settings</h1>
+                <div class="topbar-actions">
+                    <button class="lang-btn" id="langBtnSettings">EN</button>
+                </div>
+            </div>
+            <div class="section-title" data-i18n="folders">Folders</div>
+            <div class="list" id="settingsFolderList"></div>
+            <button class="add-folder-btn" id="addFolderSettingsBtn" data-i18n="addFolder">+ Add folder</button>
+        </div>
+
         <!-- Tab bar -->
         <div class="tabs">
             <div class="tab on" data-screen="home">
@@ -113,7 +126,6 @@
             <h3 id="modalTitle" data-i18n="newReminder">New Reminder</h3>
 
             <input type="text" class="field" id="inpTitle" data-i18n="taskName" placeholder="Task name">
-
             <textarea class="field" id="inpDesc" data-i18n="notes" placeholder="Notes" rows="2"></textarea>
 
             <label data-i18n="deadline">Deadline</label>
@@ -129,9 +141,6 @@
             <label data-i18n="folder">Folder</label>
             <select class="field" id="inpFolder">
                 <option value="" data-i18n="none">None</option>
-                <option value="work" data-i18n="work">Work</option>
-                <option value="personal" data-i18n="personal">Personal</option>
-                <option value="study" data-i18n="study">Study</option>
             </select>
 
             <label data-i18n="repeat">Repeat</label>
@@ -153,25 +162,13 @@
             </select>
 
             <label data-i18n="customReminders">Custom reminders</label>
-                <div id="customRemindersList"></div>
-                <button class="add-sub-btn" id="addCustomReminderBtn" data-i18n="addReminder">+ Add reminder time</button>
+            <div id="customRemindersList"></div>
+            <button class="add-sub-btn" id="addCustomReminderBtn" data-i18n="addReminder">+ Add reminder time</button>
 
             <div class="modal-btns">
                 <button class="del-btn" id="delBtn" style="display:none" data-i18n="delete">Delete</button>
                 <button class="save-btn" id="saveBtn" data-i18n="save">Save</button>
             </div>
-        </div>
-                <!-- Settings -->
-        <div class="screen" id="screen-settings">
-            <div class="topbar">
-                <h1 data-i18n="settings">Settings</h1>
-                <div class="topbar-actions">
-                    <button class="lang-btn" id="langBtnSettings">EN</button>
-                </div>
-            </div>
-            <div class="section-title" data-i18n="folders">Folders</div>
-            <div class="list" id="settingsFolderList"></div>
-            <button class="add-folder-btn" id="addFolderSettingsBtn" data-i18n="addFolder">+ Add folder</button>
         </div>
     </div>
 
