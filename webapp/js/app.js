@@ -1,225 +1,130 @@
 const app = {
     tg: null,
-    editingTaskId: null,
+    editingId: null,
+    calDate: new Date(),
+    selDate: null,
 
     init() {
         this.tg = window.Telegram?.WebApp;
         if (this.tg) {
             this.tg.ready();
             this.tg.expand();
-            this.tg.enableClosingConfirmation();
-            this.tg.setHeaderColor('#0d0d1a');
-            this.tg.setBackgroundColor('#0d0d1a');
-            this.tg.MainButton.hide();
         }
 
-        this.applyTranslations();
-        this.setupLangButton();
+        // Lang button
+        const updateLangBtn = () => {
+            document.querySelectorAll('.lang-btn').forEach(b => b.textContent = i18n.current === 'ru' ? 'EN' : 'RU');
+        };
+        updateLangBtn();
+        document.querySelectorAll('.lang-btn').forEach(b => {
+            b.onclick = () => {
+                i18n.setLang(i18n.current === 'ru' ? 'en' : 'ru');
+                updateLangBtn();
+                this.applyI18n();
+                this.refresh();
+            };
+        });
 
         // Tabs
-        document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (this.tg) this.tg.HapticFeedback?.impactOccurred('light');
-                this.switchTab(tab.dataset.page);
-            });
-            tab.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                if (this.tg) this.tg.HapticFeedback?.impactOccurred('light');
-                this.switchTab(tab.dataset.page);
-            });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+                tab.classList.add('on');
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-' + tab.dataset.screen).classList.add('active');
+                if (tab.dataset.screen === 'calendar') this.renderCalendar();
+            };
         });
 
         // Add buttons
-        document.getElementById('btnAddHome')?.addEventListener('click', (e) => { e.preventDefault(); this.openModal(); });
-        document.getElementById('btnAddHome')?.addEventListener('touchend', (e) => { e.preventDefault(); this.openModal(); });
-        document.getElementById('btnAddTask')?.addEventListener('click', (e) => { e.preventDefault(); this.openModal(); });
-        document.getElementById('btnAddTask')?.addEventListener('touchend', (e) => { e.preventDefault(); this.openModal(); });
-        document.getElementById('btnAddCalendar')?.addEventListener('click', (e) => { e.preventDefault(); this.openModal(); });
-        document.getElementById('btnAddCalendar')?.addEventListener('touchend', (e) => { e.preventDefault(); this.openModal(); });
+        document.getElementById('addHomeBtn').onclick = () => this.openModal();
+        document.getElementById('addTaskBtn').onclick = () => this.openModal();
+        document.getElementById('addCalBtn').onclick = () => this.openModal();
+        document.getElementById('addFolderBtn').onclick = () => this.tg?.showAlert('Coming soon');
 
-        // Smart lists
-        document.querySelectorAll('.smart-list-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                e.preventDefault();
-                const filterMap = { 'overdue': 'overdue', 'today': 'today', 'upcoming': 'week' };
-                const key = Object.keys(filterMap).find(k => card.classList.contains(`${k}-card`));
-                if (key) this.navigateToTasks(filterMap[key]);
-            });
-            card.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                const filterMap = { 'overdue': 'overdue', 'today': 'today', 'upcoming': 'week' };
-                const key = Object.keys(filterMap).find(k => card.classList.contains(`${k}-card`));
-                if (key) this.navigateToTasks(filterMap[key]);
-            });
-        });
+        // Cards
+        document.getElementById('cardOverdue').onclick = () => this.goToTasks('overdue');
+        document.getElementById('cardToday').onclick = () => this.goToTasks('today');
+        document.getElementById('cardUpcoming').onclick = () => this.goToTasks('week');
 
-        // Filter chips
-        document.querySelectorAll('.chip').forEach(chip => {
-            chip.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-                this.renderAllTasks(chip.dataset.filter);
-            });
-            chip.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-                this.renderAllTasks(chip.dataset.filter);
-            });
+        // Chips
+        document.querySelectorAll('.chip').forEach(c => {
+            c.onclick = () => {
+                document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+                c.classList.add('on');
+                this.renderTasks(c.dataset.filter);
+            };
         });
 
         // Search
-        document.getElementById('searchTasks')?.addEventListener('input', (e) => {
-            this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', e.target.value);
-        });
+        document.getElementById('searchInput').oninput = () => {
+            this.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
+        };
 
         // Modal
-        document.getElementById('modalOverlay')?.addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) this.closeModal();
-        });
-        document.getElementById('btnSave')?.addEventListener('click', (e) => { e.preventDefault(); this.saveTask(); });
-        document.getElementById('btnSave')?.addEventListener('touchend', (e) => { e.preventDefault(); this.saveTask(); });
-        document.getElementById('btnDelete')?.addEventListener('click', (e) => { e.preventDefault(); this.deleteTask(); });
-        document.getElementById('btnDelete')?.addEventListener('touchend', (e) => { e.preventDefault(); this.deleteTask(); });
-        document.getElementById('addSubtask')?.addEventListener('click', (e) => { e.preventDefault(); this.addSubtaskInput(); });
-        document.getElementById('addSubtask')?.addEventListener('touchend', (e) => { e.preventDefault(); this.addSubtaskInput(); });
-
-        // Priority buttons
-        document.querySelectorAll('.priority-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
+        document.getElementById('modal').onclick = function(e) { if (e.target === this) app.closeModal(); };
+        document.getElementById('saveBtn').onclick = () => this.saveTask();
+        document.getElementById('delBtn').onclick = () => this.deleteTask();
+        document.querySelectorAll('.prio-btn').forEach(b => {
+            b.onclick = () => {
+                document.querySelectorAll('.prio-btn').forEach(x => x.classList.remove('on'));
+                b.classList.add('on');
+            };
         });
 
         // Calendar nav
-        document.getElementById('prevMonth')?.addEventListener('click', (e) => { e.preventDefault(); this.changeMonth(-1); });
-        document.getElementById('prevMonth')?.addEventListener('touchend', (e) => { e.preventDefault(); this.changeMonth(-1); });
-        document.getElementById('nextMonth')?.addEventListener('click', (e) => { e.preventDefault(); this.changeMonth(1); });
-        document.getElementById('nextMonth')?.addEventListener('touchend', (e) => { e.preventDefault(); this.changeMonth(1); });
+        document.getElementById('prevMonth').onclick = () => { this.calDate.setMonth(this.calDate.getMonth() - 1); this.renderCalendar(); };
+        document.getElementById('nextMonth').onclick = () => { this.calDate.setMonth(this.calDate.getMonth() + 1); this.renderCalendar(); };
 
-        // Folder add
-        document.getElementById('btnAddFolder')?.addEventListener('click', (e) => { e.preventDefault(); this.addFolder(); });
-        document.getElementById('btnAddFolder')?.addEventListener('touchend', (e) => { e.preventDefault(); this.addFolder(); });
-
-        this.calendarDate = new Date();
+        this.applyI18n();
         this.renderHome();
-        this.renderAllTasks('all');
+        this.renderTasks('all');
     },
 
-    switchTab(page) {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        const tab = document.querySelector(`.tab-item[data-page="${page}"]`);
-        if (tab) tab.classList.add('active');
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        const pageEl = document.getElementById(`page-${page}`);
-        if (pageEl) pageEl.classList.add('active');
-        if (page === 'calendar') this.renderCalendar();
-        if (page === 'folders') this.renderFolders();
-    },
-
-    setupLangButton() {
-        document.querySelectorAll('.lang-toggle').forEach(btn => {
-            btn.textContent = i18n.current === 'ru' ? 'EN' : 'RU';
-            btn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.switchLanguage();
-            };
-        });
-    },
-
-    switchLanguage() {
-        i18n.setLang(i18n.current === 'ru' ? 'en' : 'ru');
-        document.querySelectorAll('.lang-toggle').forEach(btn => {
-            btn.textContent = i18n.current === 'ru' ? 'EN' : 'RU';
-        });
-        this.applyTranslations();
-        this.renderHome();
-        this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', document.getElementById('searchTasks')?.value || '');
-        if (document.getElementById('page-calendar').classList.contains('active')) this.renderCalendar();
-        if (document.getElementById('page-folders').classList.contains('active')) this.renderFolders();
-        this.updateModalTranslations();
-    },
-
-    applyTranslations() {
+    applyI18n() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
             if (!key) return;
             const text = i18n.t(key);
-            if ((el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA') {
-                el.placeholder = text;
-            } else if (el.tagName === 'OPTION') {
-                el.textContent = text;
-            } else {
-                el.textContent = text;
-            }
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = text;
+            else el.textContent = text;
+        });
+        document.querySelectorAll('.field[placeholder]').forEach(el => {
+            const key = Object.keys(i18n.strings[i18n.current]).find(k => i18n.strings[i18n.current][k] === el.getAttribute('data-placeholder'));
         });
     },
 
-    updateModalTranslations() {
-        const title = document.getElementById('modalTitle');
-        if (title) title.textContent = this.editingTaskId ? i18n.t('editReminder') : i18n.t('newReminder');
-        document.getElementById('inputTitle')?.setAttribute('placeholder', i18n.t('taskName'));
-        document.getElementById('inputDescription')?.setAttribute('placeholder', i18n.t('notes'));
-        document.getElementById('addSubtask')?.textContent = i18n.t('addSubtask');
-        document.getElementById('btnSave')?.textContent = i18n.t('save');
-        document.getElementById('btnDelete')?.textContent = i18n.t('delete');
-        document.querySelectorAll('.modal-label[data-i18n]').forEach(el => {
-            if (el.dataset.i18n) el.textContent = i18n.t(el.dataset.i18n);
-        });
-        document.querySelectorAll('#inputFolder option').forEach(opt => {
-            if (opt.dataset.i18n) opt.textContent = i18n.t(opt.dataset.i18n);
-        });
-        document.querySelectorAll('#inputRepeat option').forEach(opt => {
-            if (opt.dataset.i18n) opt.textContent = i18n.t(opt.dataset.i18n);
-        });
-        document.querySelectorAll('#inputRemindBefore option').forEach(opt => {
-            if (opt.dataset.i18n) opt.textContent = i18n.t(opt.dataset.i18n);
-        });
+    refresh() {
+        this.renderHome();
+        this.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
+        if (document.getElementById('screen-calendar').classList.contains('active')) this.renderCalendar();
     },
 
-    navigateToTasks(filter) {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        const tasksTab = document.querySelector('.tab-item[data-page="tasks"]');
-        if (tasksTab) tasksTab.classList.add('active');
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-tasks').classList.add('active');
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    goToTasks(filter) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+        document.querySelector('.tab[data-screen="tasks"]').classList.add('on');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-tasks').classList.add('active');
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
         const chip = document.querySelector(`.chip[data-filter="${filter}"]`);
-        if (chip) chip.classList.add('active');
-        else {
-            const allChip = document.querySelector('.chip[data-filter="all"]');
-            if (allChip) allChip.classList.add('active');
-        }
-        this.renderAllTasks(filter);
+        if (chip) chip.classList.add('on');
+        else document.querySelector('.chip[data-filter="all"]').classList.add('on');
+        this.renderTasks(filter);
     },
 
     renderHome() {
-        const active = store.getActive();
-        const countEl = document.getElementById('activeCount');
-        if (countEl) countEl.textContent = active.length;
-        const overdueEl = document.getElementById('overdueCount');
-        if (overdueEl) overdueEl.textContent = i18n.t('tasksCount', { n: store.getOverdue().length });
-        const todayEl = document.getElementById('todayCount');
-        if (todayEl) todayEl.textContent = i18n.t('tasksCount', { n: store.getToday().length });
-        const upcomingEl = document.getElementById('upcomingCount');
-        if (upcomingEl) upcomingEl.textContent = i18n.t('tasksCount', { n: store.getUpcoming().length });
+        document.getElementById('activeCount').textContent = store.getActive().length;
+        document.getElementById('overdueCount').textContent = i18n.t('tasksCount', { n: store.getOverdue().length });
+        document.getElementById('todayCount').textContent = i18n.t('tasksCount', { n: store.getToday().length });
+        document.getElementById('upcomingCount').textContent = i18n.t('tasksCount', { n: store.getUpcoming().length });
     },
 
-    renderAllTasks(filter = 'all', search = '') {
-        let tasks = [];
+    renderTasks(filter, search) {
+        search = search || document.getElementById('searchInput')?.value || '';
+        let tasks;
         switch (filter) {
             case 'today': tasks = store.getToday(); break;
-            case 'week': tasks = store.getUpcoming().filter(t => new Date(t.deadline) - new Date() < 7*86400000); break;
+            case 'week': tasks = store.getUpcoming().filter(t => (new Date(t.deadline) - new Date()) < 7*86400000); break;
             case 'overdue': tasks = store.getOverdue(); break;
             default: tasks = store.getAll();
         }
@@ -227,303 +132,168 @@ const app = {
             const q = search.toLowerCase();
             tasks = tasks.filter(t => t.title.toLowerCase().includes(q) || (t.notes && t.notes.toLowerCase().includes(q)));
         }
-        const container = document.getElementById('allTasksList');
-        if (!container) return;
+        const container = document.getElementById('taskList');
         if (!tasks.length) {
-            container.innerHTML = `<p class="no-tasks-text">${i18n.t('noTasks')}</p>`;
+            container.innerHTML = `<div class="empty">${i18n.t('noTasks')}</div>`;
             return;
         }
-        container.innerHTML = tasks.map(t => this.taskItemHTML(t)).join('');
-        this.attachTaskEvents();
-    },
-
-    taskItemHTML(t) {
-        const isOverdue = t.deadline && new Date(t.deadline) < new Date() && !t.completed;
-        const d = t.deadline ? new Date(t.deadline) : null;
-        const locale = i18n.current === 'ru' ? 'ru-RU' : 'en-US';
-        const dateStr = d ? d.toLocaleDateString(locale, { month: 'short', day: 'numeric' }) + (d.getHours() ? ` ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}` : '') : i18n.t('noDeadline');
-        const folderNames = { work: i18n.t('work'), personal: i18n.t('personal'), study: i18n.t('study') };
-        const repeatNames = { none: i18n.t('never'), daily: i18n.t('daily'), weekly: i18n.t('weekly'), monthly: i18n.t('monthly') };
-
-        return `
-            <div class="task-item ${isOverdue ? 'overdue-item' : ''} ${t.completed ? 'completed' : ''}" data-id="${t.id}">
-                <div class="task-checkbox ${t.completed ? 'checked' : ''}" data-action="toggle"></div>
-                <div class="task-item-body" data-action="edit">
-                    <div class="task-item-title">${this.escapeHtml(t.title)}</div>
-                    ${t.notes ? `<div class="task-item-notes">${this.escapeHtml(t.notes)}</div>` : ''}
-                    <div class="task-item-meta">
-                        <span class="${isOverdue ? 'overdue-text' : ''}">${dateStr}</span>
-                        ${t.folder ? `<span>${folderNames[t.folder] || t.folder}</span>` : ''}
-                        ${t.repeat !== 'none' ? `<span>${repeatNames[t.repeat]}</span>` : ''}
-                        ${t.subtasks?.length ? `<span>${t.subtasks.filter(s => typeof s === 'object' ? !s.done : true).length}/${t.subtasks.length}</span>` : ''}
+        container.innerHTML = tasks.map(t => {
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date() && !t.completed;
+            const d = t.deadline ? new Date(t.deadline) : null;
+            const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + (d.getHours() ? ` ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}` : '') : 'No deadline';
+            const folderNames = { work: 'Work', personal: 'Personal', study: 'Study' };
+            return `
+                <div class="task ${isOverdue ? 'overdue' : ''} ${t.completed ? 'done' : ''}" data-id="${t.id}">
+                    <div class="task-check ${t.completed ? 'on' : ''}" data-act="check"></div>
+                    <div class="task-body" data-act="edit">
+                        <div class="t">${t.title}</div>
+                        ${t.notes ? `<div class="n">${t.notes}</div>` : ''}
+                        <div class="m">
+                            <span class="${isOverdue ? 'red' : ''}">${dateStr}</span>
+                            ${t.folder ? '<span>' + (folderNames[t.folder] || t.folder) + '</span>' : ''}
+                            ${t.repeat !== 'none' ? '<span>' + t.repeat + '</span>' : ''}
+                        </div>
                     </div>
-                </div>
-                <span class="priority-dot ${t.priority}"></span>
-            </div>`;
-    },
+                    <span class="pdot ${t.priority}"></span>
+                </div>`;
+        }).join('');
 
-    escapeHtml(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    },
-
-    attachTaskEvents() {
-        document.querySelectorAll('.task-item').forEach(item => {
-            item.onclick = null;
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const action = e.target.closest('[data-action]')?.dataset.action;
+        container.querySelectorAll('.task').forEach(item => {
+            item.onclick = function(e) {
+                const act = (e.target.closest('[data-act]') || {}).dataset?.act;
                 const id = item.dataset.id;
-                if (action === 'toggle') {
-                    if (this.tg) this.tg.HapticFeedback?.notificationOccurred('success');
+                if (act === 'check') {
                     store.toggle(id);
-                    this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', document.getElementById('searchTasks')?.value || '');
-                    this.renderHome();
+                    app.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
+                    app.renderHome();
                 } else {
-                    this.openModal(id);
+                    app.openModal(id);
                 }
-            });
-            item.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                const action = e.target.closest('[data-action]')?.dataset.action;
-                const id = item.dataset.id;
-                if (action === 'toggle') {
-                    if (this.tg) this.tg.HapticFeedback?.notificationOccurred('success');
-                    store.toggle(id);
-                    this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', document.getElementById('searchTasks')?.value || '');
-                    this.renderHome();
-                } else {
-                    this.openModal(id);
-                }
-            });
+            };
         });
-    },
-
-    changeMonth(delta) {
-        this.calendarDate.setMonth(this.calendarDate.getMonth() + delta);
-        this.renderCalendar();
     },
 
     renderCalendar() {
-        const year = this.calendarDate.getFullYear();
-        const month = this.calendarDate.getMonth();
-        const locale = i18n.current === 'ru' ? 'ru-RU' : 'en-US';
-        const monthTitle = document.getElementById('monthTitle');
-        if (monthTitle) monthTitle.textContent = new Date(year, month).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+        const year = this.calDate.getFullYear();
+        const month = this.calDate.getMonth();
+        document.getElementById('monthTitle').textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
-        const startOffset = (firstDay.getDay() + 6) % 7;
-        const grid = document.getElementById('calendarGrid');
-        if (!grid) return;
-
+        const offset = (firstDay.getDay() + 6) % 7;
+        const grid = document.getElementById('calGrid');
         const dayNames = i18n.current === 'ru' ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-        document.querySelectorAll('.weekdays span').forEach((s, i) => { if (dayNames[i]) s.textContent = dayNames[i]; });
+        document.querySelectorAll('.cal-weekdays span').forEach((s, i) => { if (dayNames[i]) s.textContent = dayNames[i]; });
 
         let html = '';
-        for (let i = 0; i < startOffset; i++) html += '<div class="calendar-day other-month"></div>';
+        for (let i = 0; i < offset; i++) html += '<div class="cal-day dim"></div>';
         const today = new Date();
         for (let d = 1; d <= lastDay.getDate(); d++) {
             const date = new Date(year, month, d);
-            const hasTasks = store.getByDate(date).length > 0;
+            const has = store.getByDate(date).length > 0;
             const isToday = date.toDateString() === today.toDateString();
-            const isSelected = this.selectedDate && date.toDateString() === this.selectedDate.toDateString();
-            html += `<div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasTasks ? 'has-tasks' : ''}" data-date="${date.toISOString()}">${d}</div>`;
+            const isSel = this.selDate && date.toDateString() === this.selDate.toDateString();
+            html += `<div class="cal-day ${isToday ? 'now' : ''} ${isSel ? 'sel' : ''} ${has ? 'dot' : ''}" data-date="${date.toISOString()}">${d}</div>`;
         }
         grid.innerHTML = html;
 
-        grid.querySelectorAll('.calendar-day[data-date]').forEach(day => {
-            day.addEventListener('click', (e) => {
-                e.preventDefault();
-                grid.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-                day.classList.add('selected');
-                this.selectedDate = new Date(day.dataset.date);
-                this.renderDateTasks(this.selectedDate);
-            });
-            day.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                grid.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-                day.classList.add('selected');
-                this.selectedDate = new Date(day.dataset.date);
-                this.renderDateTasks(this.selectedDate);
-            });
+        grid.querySelectorAll('.cal-day[data-date]').forEach(day => {
+            day.onclick = () => {
+                grid.querySelectorAll('.cal-day').forEach(d => d.classList.remove('sel'));
+                day.classList.add('sel');
+                this.selDate = new Date(day.dataset.date);
+                this.renderCalTasks();
+            };
         });
     },
 
-    renderDateTasks(date) {
-        const tasks = store.getByDate(date);
-        const container = document.getElementById('selectedDateTasks');
-        if (!container) return;
+    renderCalTasks() {
+        const tasks = store.getByDate(this.selDate);
+        const container = document.getElementById('calTasks');
         if (!tasks.length) {
-            container.innerHTML = `<p class="no-tasks-text">${i18n.t('noTasksDate')}</p>`;
+            container.innerHTML = `<div class="empty">${i18n.t('noTasksDate')}</div>`;
             return;
         }
-        container.innerHTML = tasks.map(t => this.taskItemHTML(t)).join('');
-        this.attachTaskEvents();
-    },
-
-    renderFolders() {
-        const folders = [
-            { id: 'work', name: i18n.t('work'), color: '#7c5ce7' },
-            { id: 'personal', name: i18n.t('personal'), color: '#2ecc71' },
-            { id: 'study', name: i18n.t('study'), color: '#4A90D9' }
-        ];
-        const allTasks = store.getAll();
-        const container = document.getElementById('foldersList');
-        if (!container) return;
-        container.innerHTML = folders.map(f => {
-            const count = allTasks.filter(t => t.folder === f.id).length;
-            return `<div class="folder-card" data-folder="${f.id}"><div class="folder-left"><div class="folder-color" style="background: ${f.color};"></div><span class="folder-name">${f.name}</span></div><span class="folder-count">${count}</span></div>`;
+        container.innerHTML = tasks.map(t => {
+            return `<div class="task" data-id="${t.id}">
+                <div class="task-check ${t.completed ? 'on' : ''}" data-act="check"></div>
+                <div class="task-body" data-act="edit"><div class="t">${t.title}</div></div>
+                <span class="pdot ${t.priority}"></span>
+            </div>`;
         }).join('');
-
-        container.querySelectorAll('.folder-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.navigateToTasks('all');
-                const searchInput = document.getElementById('searchTasks');
-                if (searchInput) searchInput.value = card.dataset.folder;
-                this.renderAllTasks('all', card.dataset.folder);
-            });
-            card.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                this.navigateToTasks('all');
-                const searchInput = document.getElementById('searchTasks');
-                if (searchInput) searchInput.value = card.dataset.folder;
-                this.renderAllTasks('all', card.dataset.folder);
-            });
+        container.querySelectorAll('.task').forEach(item => {
+            item.onclick = function(e) {
+                const act = (e.target.closest('[data-act]') || {}).dataset?.act;
+                if (act === 'check') { store.toggle(item.dataset.id); app.renderCalTasks(); }
+                else app.openModal(item.dataset.id);
+            };
         });
     },
 
-    addFolder() {
-        if (this.tg) this.tg.showAlert('Создание папок будет доступно позже');
-    },
-
-    openModal(id = null) {
-        this.editingTaskId = id;
-        const modal = document.getElementById('modalOverlay');
-        const deleteBtn = document.getElementById('btnDelete');
-        const subtasksList = document.getElementById('subtasksList');
-        if (subtasksList) subtasksList.innerHTML = '';
-        this.updateModalTranslations();
+    openModal(id) {
+        this.editingId = id;
+        document.getElementById('delBtn').style.display = id ? 'block' : 'none';
+        document.getElementById('modalTitle').textContent = id ? 'Edit' : 'New Reminder';
 
         if (id) {
-            const task = store.getAll().find(t => t.id === id);
-            if (task) {
-                const titleEl = document.getElementById('modalTitle');
-                if (titleEl) titleEl.textContent = i18n.t('editReminder');
-                if (deleteBtn) deleteBtn.style.display = 'block';
-                const inputTitle = document.getElementById('inputTitle');
-                if (inputTitle) inputTitle.value = task.title;
-                const inputDesc = document.getElementById('inputDescription');
-                if (inputDesc) inputDesc.value = task.notes || '';
-                const inputDeadline = document.getElementById('inputDeadline');
-                if (inputDeadline) inputDeadline.value = task.deadline ? task.deadline.slice(0, 16) : '';
-                const inputFolder = document.getElementById('inputFolder');
-                if (inputFolder) inputFolder.value = task.folder || '';
-                const inputRepeat = document.getElementById('inputRepeat');
-                if (inputRepeat) inputRepeat.value = task.repeat || 'none';
-                const inputRemind = document.getElementById('inputRemindBefore');
-                if (inputRemind) inputRemind.value = task.remindBefore || 0;
-                document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
-                const priorityBtn = document.querySelector(`.priority-btn[data-priority="${task.priority}"]`);
-                if (priorityBtn) priorityBtn.classList.add('active');
-                if (task.subtasks) task.subtasks.forEach(s => this.addSubtaskInput(typeof s === 'object' ? s.text : s));
+            const t = store.getAll().find(x => x.id === id);
+            if (t) {
+                document.getElementById('inpTitle').value = t.title;
+                document.getElementById('inpDesc').value = t.notes || '';
+                document.getElementById('inpDeadline').value = t.deadline ? t.deadline.slice(0, 16) : '';
+                document.getElementById('inpFolder').value = t.folder || '';
+                document.getElementById('inpRepeat').value = t.repeat || 'none';
+                document.getElementById('inpRemind').value = t.remindBefore || 0;
+                document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('on'));
+                const pb = document.querySelector(`.prio-btn[data-p="${t.priority}"]`);
+                if (pb) pb.classList.add('on');
             }
         } else {
-            const titleEl = document.getElementById('modalTitle');
-            if (titleEl) titleEl.textContent = i18n.t('newReminder');
-            if (deleteBtn) deleteBtn.style.display = 'none';
-            const inputTitle = document.getElementById('inputTitle');
-            if (inputTitle) inputTitle.value = '';
-            const inputDesc = document.getElementById('inputDescription');
-            if (inputDesc) inputDesc.value = '';
-            const inputDeadline = document.getElementById('inputDeadline');
-            if (inputDeadline) inputDeadline.value = '';
-            const inputFolder = document.getElementById('inputFolder');
-            if (inputFolder) inputFolder.value = '';
-            const inputRepeat = document.getElementById('inputRepeat');
-            if (inputRepeat) inputRepeat.value = 'none';
-            const inputRemind = document.getElementById('inputRemindBefore');
-            if (inputRemind) inputRemind.value = '0';
-            document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
-            const mediumBtn = document.querySelector('.priority-btn[data-priority="medium"]');
-            if (mediumBtn) mediumBtn.classList.add('active');
+            document.getElementById('inpTitle').value = '';
+            document.getElementById('inpDesc').value = '';
+            document.getElementById('inpDeadline').value = '';
+            document.getElementById('inpFolder').value = '';
+            document.getElementById('inpRepeat').value = 'none';
+            document.getElementById('inpRemind').value = '0';
+            document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('on'));
+            document.querySelector('.prio-btn[data-p="medium"]')?.classList.add('on');
         }
-        if (modal) modal.classList.add('active');
-        setTimeout(() => {
-            const inputTitle = document.getElementById('inputTitle');
-            if (inputTitle) inputTitle.focus();
-        }, 300);
+        document.getElementById('modal').classList.add('show');
     },
 
     closeModal() {
-        const modal = document.getElementById('modalOverlay');
-        if (modal) modal.classList.remove('active');
-        this.editingTaskId = null;
-    },
-
-    addSubtaskInput(value = '') {
-        const container = document.getElementById('subtasksList');
-        if (!container) return;
-        const row = document.createElement('div');
-        row.className = 'subtask-row';
-        row.innerHTML = `<input type="text" class="modal-input subtask-input" placeholder="Subtask" value="${this.escapeHtml(value)}"><button class="subtask-remove">x</button>`;
-        row.querySelector('.subtask-remove').addEventListener('click', () => row.remove());
-        container.appendChild(row);
-        const input = row.querySelector('input');
-        if (input) input.focus();
-    },
-
-    getSubtasks() {
-        return Array.from(document.querySelectorAll('.subtask-input')).map(i => i.value.trim()).filter(v => v);
+        document.getElementById('modal').classList.remove('show');
+        this.editingId = null;
     },
 
     saveTask() {
-        const inputTitle = document.getElementById('inputTitle');
-        const title = inputTitle?.value?.trim();
-        if (!title) {
-            if (this.tg) this.tg.showAlert(i18n.t('enterTaskName'));
-            return;
-        }
+        const title = document.getElementById('inpTitle').value.trim();
+        if (!title) { this.tg?.showAlert('Enter task name'); return; }
         const data = {
             title,
-            notes: document.getElementById('inputDescription')?.value?.trim() || '',
-            deadline: document.getElementById('inputDeadline')?.value || null,
-            priority: document.querySelector('.priority-btn.active')?.dataset.priority || 'medium',
-            folder: document.getElementById('inputFolder')?.value || null,
-            repeat: document.getElementById('inputRepeat')?.value || 'none',
-            remindBefore: parseInt(document.getElementById('inputRemindBefore')?.value || '0'),
-            subtasks: this.getSubtasks()
+            notes: document.getElementById('inpDesc').value.trim(),
+            deadline: document.getElementById('inpDeadline').value || null,
+            priority: document.querySelector('.prio-btn.on')?.dataset.p || 'medium',
+            folder: document.getElementById('inpFolder').value || null,
+            repeat: document.getElementById('inpRepeat').value,
+            remindBefore: parseInt(document.getElementById('inpRemind').value),
         };
-
-        if (this.editingTaskId) {
-            store.update(this.editingTaskId, data);
-        } else {
-            store.add(data);
-        }
-
+        if (this.editingId) store.update(this.editingId, data);
+        else store.add(data);
         if (this.tg) {
-            this.tg.HapticFeedback?.notificationOccurred('success');
-            try {
-                Telegram.WebApp.sendData(JSON.stringify({ action: 'create_reminder', ...data, lang: i18n.current }));
-            } catch (e) {}
+            try { Telegram.WebApp.sendData(JSON.stringify({ action: 'create_reminder', ...data, lang: i18n.current })); } catch(e) {}
         }
-
         this.closeModal();
         this.renderHome();
-        this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', document.getElementById('searchTasks')?.value || '');
-        this.renderFolders();
+        this.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
     },
 
     deleteTask() {
-        if (this.editingTaskId && confirm(i18n.t('deleteConfirm'))) {
-            store.remove(this.editingTaskId);
+        if (this.editingId && confirm('Delete?')) {
+            store.remove(this.editingId);
             this.closeModal();
             this.renderHome();
-            this.renderAllTasks(document.querySelector('.chip.active')?.dataset.filter || 'all', document.getElementById('searchTasks')?.value || '');
-            this.renderFolders();
+            this.renderTasks(document.querySelector('.chip.on')?.dataset.filter || 'all');
         }
     }
 };
